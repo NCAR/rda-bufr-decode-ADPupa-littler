@@ -26,7 +26,7 @@
         CHARACTER*80  ostr(NSTR)
         INTEGER       y, z, idate, iflag
 
-        ostr(1)='SAID GCLONG SCLF RPID'
+        ostr(1)='SAID RPID'
         ostr(2)='SIDP SWCM YEAR MNTH DAYS'
         ostr(3)='HOUR MINU CLAT CLON'
         ostr(4)='TMDBST PRLC WDIR WSPD'
@@ -143,7 +143,7 @@ C*            reading actual data values:
      +          3(1X,F5.1),1X,A8,1X,F5.1, 
      +          1X,F4.1,1X,F6.1,4(1x,F4.1),2(1X,F7.2),1X,F6.2,
      +          1X,F7.1,1X,F5.1,1x,F6.2)') idate,csubset,
-     +          (r8arr(i,z), i = 1,4),(r8arr2(i,z), i = 1,5),
+     +          (r8arr(i,z), i = 1,2),(r8arr2(i,z), i = 1,5),
      +          (r8arr3(i,z), i = 1,4),(r8arr4(i,z), i = 1,4)
               DO y = 1,200
                IF ( outstg (y:y) .eq. '*') THEN
@@ -154,7 +154,7 @@ C*            reading actual data values:
               read(outstg,21,end=2000) M10,M1,M2,M3,M4,M5,M6
               read(minute,22) M11
 
-21            format(A10,76X,A6,1X,A7,1X,A6,1X,A7,1X,A5,2X,A5)            
+21            format(A10,64X,A6,1X,A7,1X,A6,1X,A7,1X,A5,2X,A5)            
 22            format(A2)
 
 C*-----------------------------------------------------------------------
