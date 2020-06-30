@@ -13,7 +13,7 @@ install directory. Execute the install.sh script to complete the compilations.
 The most recent version of BUFRLIB is required to compile this code; software
 download and installation instructions are provided at:
 
-https://www.emc.ncep.noaa.gov/index.php?branch=BUFRLIB
+https://emc.ncep.noaa.gov/emc/pages/infrastructure/bufrlib.php
 
 The executables will be placed in the exe directory.  Execute
 the desired executable and enter the BUFR input file name to extract
@@ -37,7 +37,7 @@ References:
 
 A guide to the BUFR libraries can be found at:
 
-https://www.emc.ncep.noaa.gov/index.php?branch=BUFRLIB
+https://emc.ncep.noaa.gov/emc/pages/infrastructure/bufrlib.php
 
 Definitions for BUFR MNEMONIC headers can be found in the doc directory 
 and at: 
