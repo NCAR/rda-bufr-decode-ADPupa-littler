@@ -24,13 +24,10 @@ exe/files.txt  edit to include desired obs files to be input into the runob2lit_
                example files are currently listed in the files.txt file. 
 ```
 To convert muliple files, place input BUFR data in `/bufrobs`,
-then edit and run the `exe/convert.csh` script accordingly. **
+then edit and run the `exe/convert.csh` script accordingly.
 
 # References
-================================================================================
-
-A guide to the BUFR libraries can be found at:
-
+A guide to the NCEP BUFR libraries can be found at:
 https://emc.ncep.noaa.gov/emc/pages/infrastructure/bufrlib.php
 
 Definitions for BUFR MNEMONIC headers can be found in the doc directory 
