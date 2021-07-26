@@ -1,8 +1,9 @@
 # rda-bufr-decode-ADPupa-littler
 
-This project contains Fortran source code to read BUFR files containing NCEP ADP upper air observations 
-that are archived in the [NCAR Research Data Archive (RDA) dataset ds351.0](https://doi.org/10.5065/39C5-Z211).
-Output is written in ASCII format.
+This project contains Fortran source code to read BUFR files containing NCEP ADP upper air observations,
+convert the observations to ASCII format, and then convert the ASCII data to little_r format. The 
+little_r formatted files then can be used as input to the WRF model.  BUFR observation files are 
+archived and available for download in the [NCAR Research Data Archive (RDA) dataset ds351.0](https://doi.org/10.5065/39C5-Z211).
 
 To compile, run the `install.sh` script under the `/install` directory to complete the compilations.
 The most recent version of BUFRLIB is required to compile this code; software download and 
