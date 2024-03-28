@@ -219,7 +219,7 @@ C*-----------------------------------------------------------------------
 112     format(6(f7.1,1x))
       
         CALL SORTWRITE(pr,zx,tt,td,d,v,l,l1,m)
-        write(18,111) iupper,dname,staid(l),date(l),
+        write(18,111) iupper,dname,staid(l),date(l),mins(l),
      &                lat(l),lon(l),ter(l),dslp,m-l+1,ibogus
         do i=l,m
           write(18,112)pr(i),zx(i),tt(i),td(i),d(i),v(i)
