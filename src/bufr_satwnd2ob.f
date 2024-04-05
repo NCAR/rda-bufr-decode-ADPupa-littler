@@ -142,8 +142,8 @@ C*      Read data values into arrays
         CALL UFBINT(lunit, locarr, MXMN, MXLV, nlevl, lstr)
         CALL UFBINT(lunit, obsarr, MXMN, MXLV, nlevo, obstr)
 
-        if((nlevi .ne. nlevl) .or. (nlevi .ne. nlevo)) then
-     +      stop 'nlevi <> nlevl/o'
+        if(nlevi .ne. nlevl .or. nlevi .ne. nlevo) then
+           stop 'nlevi <> nlevl/o'
         else
            nlev=nlevi
         endif
