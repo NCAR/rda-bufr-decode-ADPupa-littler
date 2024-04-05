@@ -142,7 +142,7 @@ C*      Read data values into arrays
         CALL UFBINT(lunit, locarr, MXMN, MXLV, nlevl, lstr)
         CALL UFBINT(lunit, obsarr, MXMN, MXLV, nlevo, obstr)
 
-        if((nlevi .ne. nlevl) .or. (nlevi .ne. nlevo)) 
+        if((nlevi .ne. nlevl) .or. (nlevi .ne. nlevo)) then
      +      stop 'nlevi <> nlevl/o'
         else
            nlev=nlevi
@@ -222,13 +222,13 @@ c       Write to output file
 112       format(6(f7.1,1x))
 
         END DO
-    END DO
+      END DO
 
 C*-----------------------------------------------------------------------
 
-2000    stop 99999     
+2000  stop 99999     
 
-        END
+      END
 
 C*-----------------------------------------------------------------------
 
