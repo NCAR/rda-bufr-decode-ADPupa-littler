@@ -127,7 +127,7 @@ C*      reading actual data values:
         minu=int(r8arr2(2,2))
         write (unit=minute, FMT='(I2)') minu
         DO k=1,2
-           IF ( minute (k:k) .eq. ' ') THEN
+           IF (minute (k:k) .eq. ' ' .or. minute(k:k) .eq. '*') THEN
               minute (k:k) = '0'
            ENDIF
         ENDDO
