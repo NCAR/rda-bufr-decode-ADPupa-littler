@@ -161,7 +161,7 @@ c       Get Table D index for csubset mnemonic, and get the
 c       description
         CALL nemtab(lun, csubset, idn, tab, n)
         desc=tabd(n, lun)(16:70)
-        write(staname, '(A40)') desc
+        write(satname, '(A40)') desc
 
 C*-----------------------------------------------------------------------
 c       Prepare output
@@ -207,7 +207,7 @@ c       Write to output file
                 write(iou,111) isurf,
      +                         dname,
      +                         csad,
-     +                         staname,
+     +                         satname,
      +                         date,
      +                         mins,
      +                         lat,
