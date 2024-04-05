@@ -161,6 +161,7 @@ c       Get Table D index for csubset mnemonic, and get the
 c       description
         CALL nemtab(lun, csubset, idn, tab, n)
         desc=tabd(n, lun)(16:70)
+        write(staname, '(A40)') desc
 
 C*-----------------------------------------------------------------------
 c       Prepare output
@@ -195,7 +196,6 @@ c       Prepare output
           CALL getcfmng(lunit, 'SAID', saidval, '  ', -1, csadstr, 
      +                  len, iret)
           csad=csadstr(1:40)
-          staname=desc(1:40)
 
 c       Write to output file
           if (iflag.eq.0) then
