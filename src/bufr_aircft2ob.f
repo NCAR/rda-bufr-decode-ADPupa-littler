@@ -8,9 +8,9 @@
 
 c  BUFR mnemonics
       CHARACTER*40 idstr, nlocstr, locstr, obstr
-      DATA idstr  /'ACID ACRN ARST RPID                     '/
+      DATA idstr  /'ACID ACRN ARST                          '/
       DATA nlocstr/'YEAR MNTH DAYS HOUR MINU                '/
-      DATA locstr /'CLAT CLON PRLC FLVL PSAL                '/
+      DATA locstr /'CLATH CLONH PRLC FLVL PSAL CLAT CLON    '/
       DATA obstr  /'MIXR REHU TMDB WDIR WSPD                '/
 
       parameter(iu=9,iou=10,lunit=11)
@@ -140,13 +140,16 @@ c  Read data values into arrays
 
         write(*,*) 'nlevi, nlevn, nlevl, nlevo: ',
      +              nlevi,nlevn,nlevl,nlevo
-        if(nlevi .ne. nlevn .or. 
-     +     nlevi .ne. nlevl .or. 
-     +     nlevi .ne. nlevo) then
-             stop 'nlevi <> nlevn/l/o'
-        else
-           nlev=nlevi
-        endif
+
+        write(*,*) 'lat/lon: ',locarr(1,1),locarr(2,1)
+
+c        if(nlevi .ne. nlevn .or. 
+c     +     nlevi .ne. nlevl .or. 
+c     +     nlevi .ne. nlevo) then
+c             stop 'nlevi <> nlevn/l/o'
+c        else
+           nlev=nlevo
+c        endif
 
         minu=int(nlocarr(5,1))
         write (unit=minute, FMT='(I2)') minu
@@ -190,8 +193,8 @@ c     +           (r8arr4(i,z), i = 1,3),
 c     +           (r8arr5(i,z), i = 1,3),
 c     +           (r8arr6(i,z), i = 1,2)
 
-          write(M1, '(F7.2)') locarr(1,z)  ! lat
-          write(M2, '(F7.2)') locarr(2,z)  ! lon
+          write(M1, '(F7.2)') locarr(1,z)  ! lat (CLATH)
+          write(M2, '(F7.2)') locarr(2,z)  ! lon (CLONH)
           write(M3, '(F8.1)') locarr(4,z)  ! zx1 (FLVL)
           write(M4, '(F8.1)') locarr(5,z)  ! zx2 (PSAL)
           write(M5, '(F6.2)') obsarr(3,z)  ! tt
