@@ -8,10 +8,10 @@
 
 c BUFR mnemonics
       CHARACTER*40 idstr, nlocstr, locstr, obstr
-      DATA idstr  /'ACID ACRN ARST                          '
-      DATA nlocstr/'YEAR MNTH DAYS HOUR MINU                '
-      DATA locstr /'CLAT CLON PRLC IALT                     '
-      DATA obstr  /'MIXR REHU TMDB WDIR WSPD                '
+      DATA idstr  /'ACID ACRN ARST                          '/
+      DATA nlocstr/'YEAR MNTH DAYS HOUR MINU                '/
+      DATA locstr /'CLAT CLON PRLC IALT                     '/
+      DATA obstr  /'MIXR REHU TMDB WDIR WSPD                '/
 
       PARAMETER (iu=9,iou=10,lunit=11)
 
