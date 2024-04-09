@@ -158,7 +158,7 @@ C* Read data values into arrays
 c  Get Table D index for csubset mnemonic, and get the description
         CALL nemtab(lun, csubset, idn, tab, n)
         desc=tabd(n, lun)(16:70)
-        write(aircarname, '(A40)') desc(17:)
+        write(aircarname, '(A40)') desc(15:)
 
 C*-----------------------------------------------------------------------
 c         Prepare output
