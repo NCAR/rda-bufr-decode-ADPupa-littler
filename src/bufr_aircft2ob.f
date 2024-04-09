@@ -195,7 +195,7 @@ c     +           (r8arr6(i,z), i = 1,2)
           write(M5, '(F6.2)') obsarr(3,z)  ! tt
           write(M6, '(F5.1)') obsarr(4,z)  ! wdir
           write(M7, '(F6.2)') obsarr(5,z)  ! wspd
-          write(M8, '(F8.1)') locstr(3,z)  ! pr
+          write(M8, '(F8.1)') locarr(3,z)  ! pr
           write(M10, '(I10)') idate
           write(M11, '(A2)') minute
 
