@@ -1,15 +1,29 @@
-      PARAMETER ( MXMN = 8 )
-      PARAMETER ( MXLV = 86 )
-      PARAMETER ( NVAR = 17 )
-      PARAMETER ( NSTR = 4 )
+      use moda_tababd
 
-      REAL*8 r8arr(MXMN, MXLV),  r8arr2(MXMN, MXLV),
-     +       r8arr3(MXMN, MXLV), r8arr4(MXMN, MXLV) 
+      PARAMETER ( MXMN = 10 )
+      PARAMETER ( MXLV = 255 )
 
-      PARAMETER (iu=9,iou=10)
- 
+      REAL*8 idarr(MXMN, MXLV), nlocarr(MXMN, MXLV),
+     +       locarr(MXMN, MXLV), obsarr(MXMN, MXLV) 
+
+c BUFR mnemonics
+      CHARACTER*40 idstr, nlocstr, locstr, obstr
+      DATA idstr  /'ACID ACRN ARST                          '
+      DATA nlocstr/'YEAR MNTH DAYS HOUR MINU                '
+      DATA locstr /'CLAT CLON PRLC IALT                     '
+      DATA obstr  /'MIXR REHU TMDB WDIR WSPD                '
+
+      PARAMETER (iu=9,iou=10,lunit=11)
+
+      INTEGER year,month,days,hour
+      real lat,lon,pr,tt,td,wdir,wspd
+      INTEGER nlevi, nlevn, nlevl, nlevo, nlev
+      INTEGER irec, isub
+      REAL ter
+
+
       real pr,tt,td         
-      integer xht, nlev, iargc, n, minu, k
+      integer xht, iargc, n, minu, k
       real xpr,xu,xv
       real temp,v,zx,d
       real lat, lon
@@ -25,12 +39,8 @@
       CHARACTER csubset*8, inf*200, outstg*200
       INTEGER y, z, i, idate, iflag
 
-      CHARACTER*80 ostr(NSTR)
-
-      ostr(1)='ACID ACRN ARST'
-      ostr(2)='YEAR MNTH DAYS HOUR MINU'
-      ostr(3)='CLAT CLON PRLC IALT'
-      ostr(4)='MIXR REHU TMDB WDIR WSPD'
+      INTEGER lun, il, im
+      CHARACTER*40 aircarname, aircarid
 
 C*-----------------------------------------------------------------------
 c*    Read the command-line arguments
@@ -65,16 +75,11 @@ c*
       END IF
 
 C*-----------------------------------------------------------------------
-C*    Open the BUFR messages file.
-      OPEN(UNIT=11, FILE=inf, form='unformatted')
-
-      call getarg( 1, argv )
-      inf=argv
-      call getarg(2,argv)
-      date_tag=argv
+C*    Open BUFR input file
+      OPEN(UNIT=lunit, FILE=inf, form='unformatted')
 
       dname=' AIREP'
-      fout= "Airca"//date_tag//'.obs'
+      fout= "aircar"//date_tag//'.obs'
 
 c     Open output file
       open(iou, file=fout, status='unknown', form='formatted')
@@ -97,78 +102,91 @@ c     Open output file
       d=dumm
       v=dumm
 
-C*-----------------------------------------------------------------------
-C*      Associate the tables file with the messages file, and identify
-C*      the latter to the BUFRLIB software.
+C* Connect BUFR file to the BUFRLIB software for input operations.
 
-      CALL OPENBF(11, 'IN', 11)
+      CALL OPENBF(lunit, 'IN', lunit)
 
-C*      Specify that we would like IDATE values returned using 10 digits
+C* Specify that we would like IDATE values returned using 10 digits
 C*      (i.e. YYYYMMDDHH ).
 
+c  Get file ID (lun) associated with the BUFR file
+      CALL status(lunit, lun, il, im)
+
+c  Include code and flag table information from master BUFR tables
+      CALL codflg('Y')
+
+C* Specify format of IDATE values returned by BUFRLIB (YYYYMMDDHHMM)
       CALL DATELEN(10)
 
 C*-----------------------------------------------------------------------
+c  Loop through BUFR subsets
+
       DO WHILE ( .true. )
 
-C*      Read the next BUFR message.
+        call readns(lunit, csubset, idate, ierr)
+        call ufbcnt(lunit, irec, isub)
 
-        call readns(11,csubset,idate,ierr)
-c        write(*,*)' idate: ',idate,'  ',csubset
+        print'(''MESSAGE: '',A8,2(2X,I6),i12 )',
+     +           csubset,irec,isub,idate
+
         IF (ierr .eq.  -1) THEN
-          write(*,*) '....all records read.'
-          CALL CLOSBF  ( 11 )
+          write(*,*) '[bufr_aircar2ob]....all records read.'
+          CALL CLOSBF  (lunit)
           GOTO 2000  
         END IF
 
-C*      At this point, we have a data subset within the
-C*      internal arrays of BUFRLIB, and we can now begin
-C*      reading actual data values:
+C* Read data values into arrays
 
-        CALL UFBINT(11, r8arr,  MXMN, MXLV, nlv, ostr(1))
-        CALL UFBINT(11, r8arr2, MXMN, MXLV, nlv, ostr(2))
-        CALL UFBINT(11, r8arr3, MXMN, MXLV, nlv, ostr(3))
-        CALL UFBINT(11, r8arr4, MXMN, MXLV, nlv, ostr(4))
+        CALL UFBINT(lunit, idarr, MXMN, MXLV, nlevi, idstr)
+        CALL UFBINT(lunit, nlocarr, MXMN, MXLV, nlevn, nlocstr)
+        CALL UFBINT(lunit, locarr, MXMN, MXLV, nlevl, locstr)
+        CALL UFBINT(lunit, obsarr, MXMN, MXLV, nlevo, obstr)
 
-        minu=int(r8arr2(5,1))
+        if(nlevi .ne. nlevn .or. 
+     +     nlevi .ne. nlevl .or. 
+     +     nlevi .ne. nlevo) then
+             stop 'nlevi <> nlevn/l/o'
+        else
+           nlev=nlevi
+        endif
+
+        minu=int(nlocarr(5,1))
         write (unit=minute, FMT='(I2)') minu
 
         DO k=1,2
-           IF ( minute (k:k) .eq. ' ') THEN
+           IF ( minute (k:k) .eq. ' ' .or. minute(k:k) .eq. '*') THEN
              minute (k:k) = '0'
            ENDIF
         ENDDO 
 
-        DO z = 1, nlv
-          WRITE (UNIT=outstg, FMT='(I10,1x,A8,2(1X,A8),
-     +           1X,A4,1X,F6.1,4(1X,F4.1),1X,F6.1,1x,F5.1,
-     +           2(1X,F8.1),2(1X,F4.1),3(1X,F5.1))') 
-     +           idate,csubset,
-     +           (r8arr(i,z), i=1,3),(r8arr2(i,z), i=1,5),
-     +           (r8arr3(i,z), i=1,4),(r8arr4(i,z), i=1,5)
-          DO y = 1,200
-            IF ( outstg (y:y) .eq. '*') THEN
-              outstg (y:y) = 'm'
-            ENDIF
-          ENDDO
-
-          read(outstg,21) M10,xn1,xn2,xn3,xn4,xy,xm,xd,
-     &                    xh,xmin,M1,M2,M3,M4,M5,M6,M7,M8,M9
-          read(minute,22) M11
-
-21        format(A10,1X,3(A8,1X),A4,1X,A6,4(1X,A4),1X,A6,1X,A5,
-     &           2(1X,A8),2(1X,A4),2(1X,A5),1X,A5)
-22        format(A2)
+c  Get Table D index for csubset mnemonic, and get the description
+        CALL nemtab(lun, csubset, idn, tab, n)
+        desc=tabd(n, lun)(16:70)
+        write(aircarname, '(A40)') desc(17:)
 
 C*-----------------------------------------------------------------------
 c         Prepare output
+
+        DO z = 1, nlev
+
+          write(M1, '(F7.2)') locarr(1,z)  ! lat
+          write(M2, '(F7.2)') locarr(2,z)  ! lon
+          write(M3, '(F8.1)') locarr(3,z)  ! pr
+          write(M4, '(F8.1)') locarr(4,z)  ! ialt
+          write(M5, '(F4.1)') obsarr(1,z)  ! mixr
+          write(M6, '(F4.1)') obsarr(2,z)  ! rehu
+          write(M7, '(F6.2)') obsarr(3,z)  ! tt
+          write(M8, '(F5.1)') obsarr(4,z)  ! wdir
+          write(M9, '(F6.2)') obsarr(5,z)  ! wspd
+          write(M10, '(I10)') idate
+          write(M11, '(A2)') minute
 
           CALL READMval(M1,lat)
           CALL READMval(M2,lon)
           CALL READMval(M3,pr)
           CALL READMval(M7,tt)
-          CALL READMval(M8,d)
-          CALL READMval(M9,v)
+          CALL READMval(M8,wdir)
+          CALL READMval(M9,wspd)
                
           if(pr.ne.0 .and. pr.ne.99999.9) then
             pr=pr/100
@@ -176,20 +194,33 @@ c         Prepare output
 
           date=M10
           mins=M11
+
+          aircarid=repeat(' ',40)
+          write(aircarid, '(F8.1)') idarr(1,z)
           
+c------------------------------------------------------------------------
 c         Write output 
           if (iflag.eq.0) then
             write(iou,fmt='(a10)') date_tag
             iflag=1
           endif
           if(slat<=lat .and. nlat>=lat .and.
-     &       wlon<=lon .and. elon>=lon) then
-            write(iou,111) isurf,dname,dname,date,mins,
-     &                     lat,lon,ter,dslp,nlev,ibogus
-            write(iou,112) pr,zx,tt,td,d,v
+     +       wlon<=lon .and. elon>=lon) then
+            write(iou,111) isurf,
+     +                     dname,
+     +                     aircarid,
+     +                     aircarname,
+     +                     date,
+     +                     mins,
+     +                     lat,
+     +                     lon,
+     +                     ter,
+     +                     dslp,
+     +                     nlev,
+     +                     ibogus
+            write(iou,112) pr,zx,tt,td,wdir,wspd
           endif
-
-111       format(i1,2(1x,a6),1x,a10,a2,4(f7.1,1x),i3,1x,i1)
+111       format(i1,1x,a6,2(1x,a40),1x,a10,a2,4(f7.1,1x),i3,1x,i1)
 112       format(6(f7.1,1x))
           
         ENDDO
@@ -205,7 +236,7 @@ C*-----------------------------------------------------------------------
       SUBROUTINE READMval(M1,fl)
       character*8 M1
       dumm=99999.9
-      if(M1(1:1) ==  'm') then
+      if(M1(1:1)=='m' .or. M1(1:1)=='*') then
         fl = dumm
       else
         read(M1,*)fl
