@@ -138,6 +138,8 @@ c  Read data values into arrays
         CALL UFBINT(lunit, locarr, MXMN, MXLV, nlevl, locstr)
         CALL UFBINT(lunit, obsarr, MXMN, MXLV, nlevo, obstr)
 
+        write(*,*) 'nlevi, nlevn, nlevl, nlevo: ',
+     +              nlevi,nlevn,nlevl,nlevo
         if(nlevi .ne. nlevn .or. 
      +     nlevi .ne. nlevl .or. 
      +     nlevi .ne. nlevo) then
