@@ -146,7 +146,7 @@ c  Read data values into arrays
            nlev=nlevi
         endif
 
-        minu=int(r8arr2(2,1))
+        minu=int(nlocarr(5,1))
         write (unit=minute, FMT='(I2)') minu
 
         DO k=1,2
