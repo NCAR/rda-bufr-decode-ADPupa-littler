@@ -191,8 +191,8 @@ c         Prepare output
           date=M10
           mins=M11
 
-          aircarid=repeat(' ',40)
-          write(aircarid, '(F8.1)') idarr(1,z)
+c          aircarid=repeat(' ',40)
+c          write(aircarid, '(F8.1)') idarr(1,z)
           
 c------------------------------------------------------------------------
 c         Write output 
@@ -204,7 +204,7 @@ c         Write output
      +       wlon<=lon .and. elon>=lon) then
             write(iou,111) isurf,
      +                     dname,
-     +                     aircarid,
+     +                     dname,
      +                     aircarname,
      +                     date,
      +                     mins,
