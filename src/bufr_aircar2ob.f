@@ -21,25 +21,21 @@ c BUFR mnemonics
       INTEGER irec, isub
       REAL ter
 
+      CHARACTER*12 M1,M2,M3,M4,M5,M6,M7,M8,M9,M10
+      CHARACTER*2 M11, minute, mins
 
-      real pr,tt,td         
-      integer xht, iargc, n, minu, k
-      real xpr,xu,xv
-      real temp,v,zx,d
-      real lat, lon
-      real xt,xtd
+      integer iargc, n, minu, k
       character*20 fin,fout
       character*10 date_tag,date
       character*6 dname
-      character argv*300,minute*2,M11*2,mins*2
-      character*12 ilev,xy,xm,xd,xh,xmin,M5,M6,M7,M8
-      character*12 M10,M1,M2,min,M3,M4,xn1,xn2,xn3,xn4,M9
+      character*300 argv
       real wlon,elon,slat,nlat
 
-      CHARACTER csubset*8, inf*200, outstg*200
+      CHARACTER csubset*8, inf*200
       INTEGER y, z, i, idate, iflag
 
       INTEGER lun, il, im
+      CHARACTER*80 desc
       CHARACTER*40 aircarname, aircarid
 
 C*-----------------------------------------------------------------------
