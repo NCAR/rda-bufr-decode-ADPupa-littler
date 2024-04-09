@@ -216,7 +216,7 @@ c         Write output
      +                     ibogus
             write(iou,112) pr,zx,tt,td,wdir,wspd
           endif
-111       format(i1,1x,a6,2(1x,a40),1x,a10,a2,4(f7.1,1x),i3,1x,i1)
+111       format(i1,2(1x,a6),34x,a40,1x,a10,a2,4(f7.1,1x),i3,1x,i1)
 112       format(6(f7.1,1x))
           
         ENDDO
