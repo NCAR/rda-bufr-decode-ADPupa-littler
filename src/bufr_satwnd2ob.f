@@ -128,7 +128,7 @@ C*    Loop through BUFR subsets
         CALL READNS(lunit, csubset, idate, ierr)
         CALL UFBCNT(lunit, irec, isub)
 
-        print'(''MESSAGE: '',A8,2(2X,I4),i12 )',
+        print'(''MESSAGE: '',A8,2(2X,I6),i12 )',
      +           csubset,irec,isub,idate
 
         IF (ierr .eq.  -1 ) THEN
@@ -161,7 +161,7 @@ c       Get Table D index for csubset mnemonic, and get the
 c       description
         CALL nemtab(lun, csubset, idn, tab, n)
         desc=tabd(n, lun)(16:70)
-        write(satname, '(A40)') desc
+        write(satname, '(A40)') desc(17:)
 
 C*-----------------------------------------------------------------------
 c       Prepare output
@@ -235,7 +235,7 @@ C*-----------------------------------------------------------------------
       SUBROUTINE READMval(M1,fl)
            character*8 M1
            dumm=99999.9
-           if(M1(1:1) ==  'm') then
+           if(M1(1:1) ==  'm' .or. M1(1:1) == '*') then
                fl = dumm
            else
                read(M1,*)fl
