@@ -138,18 +138,7 @@ c  Read data values into arrays
         CALL UFBINT(lunit, locarr, MXMN, MXLV, nlevl, locstr)
         CALL UFBINT(lunit, obsarr, MXMN, MXLV, nlevo, obstr)
 
-        write(*,*) 'nlevi, nlevn, nlevl, nlevo: ',
-     +              nlevi,nlevn,nlevl,nlevo
-
-        write(*,*) 'lat/lon: ',locarr(1,1),locarr(2,1)
-
-c        if(nlevi .ne. nlevn .or. 
-c     +     nlevi .ne. nlevl .or. 
-c     +     nlevi .ne. nlevo) then
-c             stop 'nlevi <> nlevn/l/o'
-c        else
-           nlev=nlevo
-c        endif
+        nlev=nlevo
 
         minu=int(nlocarr(5,1))
         write (unit=minute, FMT='(I2)') minu
@@ -170,29 +159,6 @@ c  Prepare output
 
         DO z = 1,nlev
 
-c          WRITE (UNIT=outstg, FMT='(
-c     +           I10,            ! idate
-c     +           1x,A8,          ! csubset
-c     +           1X,A6,          ! RPID
-c     +           1X,F6.1,        ! YEAR
-c     +           4(1X,F4.1),     ! MNTH, DAYS, HOUR, MINU
-c     +           2(1X,F6.1),     ! CLAT, CLON
-c     +           2(1X,F7.1),     ! FLVL, PSAL
-c     +           2(1X,F6.1),     ! CLATH, CLONH
-c     +           1X,F7.1,        ! HMSL
-c     +           2(1X,F5.1),     ! TMDB, WDIR
-c     +           2(1X,F5.1),     ! WSPD, DGOT
-c     +           2(1X,F7.1),     ! HBOT, HTOP
-c     +           2(1X,F7.1))')   ! HOCB, HOCT
-c
-c     +           idate,csubset,
-c     +           (r8arr(i,z), i = 1,4),
-c     +           (r8arr2(i,z), i = 1,6),
-c     +           (r8arr3(i,z), i = 1,3), 
-c     +           (r8arr4(i,z), i = 1,3),
-c     +           (r8arr5(i,z), i = 1,3),
-c     +           (r8arr6(i,z), i = 1,2)
-
           write(M1, '(F7.2)') locarr(1,z)  ! lat (CLATH)
           write(M2, '(F7.2)') locarr(2,z)  ! lon (CLONH)
           write(M3, '(F8.1)') locarr(4,z)  ! zx1 (FLVL)
@@ -212,8 +178,6 @@ c     +           (r8arr6(i,z), i = 1,2)
           CALL READMval(M6,wdir)
           CALL READMval(M7,wspd)
 
-          write(*,*) 'RPID: ',idarr(4,z)
- 
           date=M10
           mins=M11
 
