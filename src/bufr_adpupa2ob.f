@@ -1,0 +1,377 @@
+      use moda_tababd
+
+      PARAMETER (MXMN = 10)
+      PARAMETER (MXLV = 255)
+
+      REAL*8 idarr(MXMN, MXLV),  nlocarr(MXMN, MXLV),
+     +       locarr(MXMN, MXLV), obsarr(MXMN, MXLV) 
+
+c  BUFR mnemonics
+      CHARACTER*40 idstr, nlocstr, locstr, obstr
+      DATA idstr  /'WMOB WMOS STSN SSTN                     '/
+      DATA nlocstr/'YEAR MNTH DAYS HOUR MINU                '/
+      DATA locstr /'CLAT CLON SELV                          '/
+      DATA obstr  /'TMDB TMDP PRLC WDIR WSPD                '/
+
+      parameter(iu=9,iou=10,lunit=11,nz=9999999)
+      dimension pr(nz),tt(nz),td(nz)
+      integer  xht,nlev,i, iargc, n,minu,k
+      real  xu,xv,xy,xm,xh,xmm,xd
+      real  temp,v(nz),zx(nz),d(nz),ter(nz)
+      real  lat(nz), lon(nz)
+      real xt,xtd,xtt
+      character*80 fin,fout
+      character*10  date_tag, date(nz), xpr
+      character*300 argv
+      character*2 minute, mins(nz) 
+      character*6 dname
+      character*80 staid(nz)
+      character*3 ilev
+      character*8 min,xlat,xlon
+
+      real wlon,elon,slat,nlat
+
+      CHARACTER*8 M1,M2,M3,M4,M5
+      CHARACTER*10 M10
+      CHARACTER*2 M11
+      CHARACTER*80 M20
+      CHARACTER*8 csubset
+      CHARACTER*200 inf
+
+      INTEGER y,z,idate
+
+      INTEGER lun, il, im
+      CHARACTER*80 desc
+      CHARACTER*40 adpupaname, adpupaid
+
+C*-----------------------------------------------------------------------
+c*    Read the command-line arguments
+c*      
+      n = iargc()
+      IF (n .GE. 2) THEN
+        call getarg( 1, argv )
+        inf=argv
+        call getarg(2,argv)
+        date_tag=argv
+        IF (n .eq. 6) THEN  ! User-specified lat/lon boundaries
+          call getarg(3,argv)
+          read(argv,*) wlon
+          call getarg(4,argv)
+          read(argv,*) elon
+          call getarg(5,argv)
+          read(argv,*) slat
+          call getarg(6,argv)
+          read(argv,*) nlat
+          write(*,*) 'Lon/lat boundaries: ',wlon,elon,slat,nlat
+        ELSE  ! Default lon/lat boundaries
+          slat = -90.
+          nlat = 90.
+          wlon = -180.
+          elon = 180.
+        END IF
+      ELSE
+        write(*,*) 'Usage: bufr_aircar2ob.x gdas.adpsfc.t<HH>z.
+     +<YYYYMMDD>.bufr.be <YYYYMMDDHH> west_lon east_lon 
+     +south_lat north_lat'
+        STOP
+      END IF
+
+C*-----------------------------------------------------------------------
+c  Open BUFR input file
+      OPEN(UNIT=lunit, FILE=inf, form='unformatted')
+
+      dname='  TEMP'
+      fout="adpupa"//date_tag//'.obs'
+
+c  Open output file
+      open(iou, file=fout, status='unknown', form='formatted')
+
+      iflag = 0
+      dumm=99999.9
+
+      iupper=0
+      ibogus=0
+      dslp=dumm
+      do k=1,nz
+        date(k)='MMMMMMMMMM'
+        mins(k)='MM'
+        staid(k)='MMMMMM'
+        ter(k)=dumm
+        pr(k)=dumm
+        zx(k)=dumm
+        tt(k)=dumm
+        td(k)=dumm
+        d(k)=dumm
+        v(k)=dumm
+      enddo
+
+C* Connect BUFR file to the BUFRLIB software for input operations.
+
+      CALL OPENBF(lunit, 'IN', lunit)
+
+C* Specify that we would like IDATE values returned using 10 digits
+C*      (i.e. YYYYMMDDHH ).
+
+c  Get file ID (lun) associated with the BUFR file
+      CALL status(lunit, lun, il, im)
+
+c  Include code and flag table information from master BUFR tables
+      CALL codflg('Y')
+
+C* Specify format of IDATE values returned by BUFRLIB (YYYYMMDDHHMM)
+      CALL DATELEN(10)
+
+      ln=0 
+
+C*-----------------------------------------------------------------------
+c  Loop through BUFR subsets
+
+      DO WHILE ( .true. )
+
+        CALL READNS(lunit, csubset, idate, ierr)
+        call ufbcnt(lunit, irec, isub)
+
+        print'(''MESSAGE: '',A8,2(2X,I6),i12 )',
+     +           csubset,irec,isub,idate
+
+        IF (ierr .eq.  -1) THEN
+          WRITE (*,*) '[bufr_adpupa2ob]....all records read, Exit'
+          CALL CLOSBF(lunit)
+          GOTO 1000 
+        END IF
+
+c  Read data values into arrays
+
+        CALL UFBINT(lunit, idarr, MXMN, MXLV, nlevi, idstr)
+        CALL UFBINT(lunit, nlocarr, MXMN, MXLV, nlevn, nlocstr)
+        CALL UFBINT(lunit, locarr, MXMN, MXLV, nlevl, locstr)
+        CALL UFBINT(lunit, obsarr, MXMN, MXLV, nlevo, obstr)
+
+        nlev = nlevo
+
+        minu=int(nlocarr(5,1))
+        write (unit=minute, FMT='(I2)') minu
+        DO k=1,2
+           IF (minute (k:k) .eq. ' ' .or. minute(k:k) .eq. '*') THEN
+              minute (k:k) = '0'
+           ENDIF
+        ENDDO
+
+c  Get Table D index for csubset mnemonic, and get the description
+        CALL nemtab(lun, csubset, idn, tab, n)
+        desc=tabd(n, lun)(16:70)
+        write(adpupaname, '(A40)') desc(15:)
+
+C*-----------------------------------------------------------------------
+c  Prepare output
+
+        DO z = 1,nlev
+          IF(obsarr(3,z) .lt. 10E9) THEN  
+
+c             WRITE (UNIT=outstg, FMT='(
+c     +              I10,         ! idate
+c     +              1x,A8,       ! csubset
+c     +              1X,A6,       ! RPID
+c     +              1X,F6.1,     ! YEAR
+c     +              4(1x,F4.1),  ! MNTH, DAYS, HOUR, MINU
+c     +              2(1X,F7.2),  ! CLAT, CLON
+c     +              1X,F6.2,     ! SELV
+c     +              1X,F6.2,     ! TMDB
+c     +              1X,F6.1,     ! TMDP
+c     +              1X,F8.1,     ! PRLC
+c     +              1X,F5.1,     ! WDIR
+c     +              1x,F6.2,     ! WSPD
+c     +              1X,I4,       ! nlev
+c     +              1X,I6        ! z
+c     +              )')
+c     +              idate,csubset,
+c     +              (r8arr(i,1), i = 1,4),
+c     +              (r8arr2(i,1), i = 1,5),
+c     +              (r8arr3(i,z), i = 1,5),
+c     +              nlev,z
+
+             iflag=iflag+1
+             j=iflag
+
+             write(xlat, '(F7.2)') locarr(1,z)  ! lat (CLAT)
+             write(xlon, '(F7.2)') locarr(2,z)  ! lon (CLON)
+             write(xpr, '(F8.1)') obsarr(3,z)  ! pr
+             write(M1, '(F6.2)') obsarr(1,z)  ! tt
+             write(M2, '(F6.2)') obsarr(2,z)  ! td
+             write(M3, '(F5.1)') obsarr(4,z)  ! wdir
+             write(M4, '(F6.2)') obsarr(5,z)  ! wspd
+             write(M5, '(F6.2)') locarr(3,z)  ! ter (SELV)
+             write(M10, '(I10)') idate
+             write(M11, '(A2)') minute
+             write(M20, '(A40)') idstr(3,z)
+
+             CALL READMval(M1,tt(j))
+             CALL READMval(M2,td(j))
+             CALL READMval(M3,d(j))
+             CALL READMval(M4,v(j))
+             CALL READMval(M5,ter(j))
+             CALL READMval(xlat,lat(j))
+             CALL READMval(xlon,lon(j))
+             CALL READMval(xpr,pr(j))
+        
+             if(pr(j).ne.0 .and. pr(j).ne.99999.9) then
+                pr(j)= pr(j)/100
+             end if
+
+             date(j)=M10
+             mins(j)=M11
+             staid(j)=M20
+         ENDIF 
+        END DO
+      END DO
+
+C*-----------------------------------------------------------------------
+c  write output
+
+1000  if (iflag .ne. 0) then 
+        iflag1=0
+        iflag2=1
+        iflag3=1
+        write(iou,fmt='(a10)') date_tag
+        alat1=9999
+        alon1=9999
+        l=1
+        do k = 1, iflag 
+          if(slat<=lat(k) .and. nlat>=lat(k) .and. 
+     &       wlon<=lon(k) .and. elon>=lon(k)) then
+
+            if(alat1.ne.lat(k) .and. alon1.ne.lon(k)) then
+               alat1=lat(k)
+               alon1=lon(k)
+               if(iflag1.ne.0) then
+                  CALL SORTWRITE(pr,zx,tt,td,d,v,l,l1,m)
+                  write(iou,111) iupper,
+     +                           dname,
+     +                           staid(l),
+     +                           adpupaname,
+     +                           date(l),
+     +                           mins(l),
+     +                           lat(l),
+     +                           lon(l),
+     +                           ter(l),
+     +                           dslp,
+     +                           m-l+1,
+     +                           ibogus
+                  do i=l,m
+                    write(iou,112) pr(i),zx(i),tt(i),td(i),d(i),v(i)
+                  enddo
+!                 write(*,*)l,' ',m,' ',l1
+                  iflag2=1
+               endif
+
+               iflag1=1
+               l=k
+
+            endif
+            l1=k
+          endif
+        enddo
+
+111     format(i1,1x,a6,2(1x,a40),1x,a10,a2,4(f7.1,1x),i3,1x,i1)
+112     format(6(f7.1,1x))
+      
+        CALL SORTWRITE(pr,zx,tt,td,d,v,l,l1,m)
+        write(iou,111) iupper,
+     +                 dname,
+     +                 staid(l),
+     +                 adpupaname,
+     +                 date(l),
+     +                 mins(l),
+     +                 lat(l),
+     +                 lon(l),
+     +                 ter(l),
+     +                 dslp,
+     +                 m-l+1,
+     +                 ibogus
+        do i=l,m
+          write(iou,112)pr(i),zx(i),tt(i),td(i),d(i),v(i)
+        enddo
+
+        close(iou)
+      endif
+
+C*-----------------------------------------------------------------------
+!       write(*,*)'nlev ', nlev
+2000  stop 99999
+
+      END
+
+C*-----------------------------------------------------------------------
+      SUBROUTINE READMval(M1,fl)
+      character*8 M1 
+      dumm=99999.9
+      if(M1(1:1) ==  'm' .or. M1(1:1) == '*') then
+         fl = dumm
+      else
+         read(M1,*)fl
+      endif
+
+      RETURN
+      END
+
+C*-----------------------------------------------------------------------
+      SUBROUTINE SORTWRITE(pr,zx,tt,td,d,v,l,k,m)
+      parameter(nz=9999999)
+
+      dimension pr(nz),tt(nz),td(nz)
+      real temp,v(nz),zx(nz),d(nz)
+      dimension prt(nz),ttt(nz),tdt(nz)
+      real vt(nz),zxt(nz),dt(nz)
+      
+      do i=l,k-1
+        do j= i+1,k
+          if (pr(i).lt.pr(j)) then
+             call SWAPTWO(pr(i),pr(j))
+             call SWAPTWO(zx(i),zx(j))
+             call SWAPTWO(tt(i),tt(j))
+             call SWAPTWO(td(i),td(j))
+             call SWAPTWO(v(i),v(j))
+             call SWAPTWO(d(i),d(j))
+          endif 
+        enddo
+      enddo
+      m=l 
+      do i=l+1,k
+        if(pr(i).eq.pr(m))then
+           pr(m)=pr(i)
+           if(zx(i)<99999) then
+              zx(m)=zx(i)
+           endif
+           if(tt(i)<99999) then
+              tt(m)=tt(i)
+           endif
+           if(td(i)<99999) then
+              td(m)=td(i)
+           endif
+           if(v(i)<99999) then
+              v(m)=v(i)
+           endif
+           if(d(i)<99999) then
+              d(m)=d(i)
+           endif
+        else
+           m=m+1
+           pr(m)=pr(i)
+           zx(m)=zx(i)
+           tt(m)=tt(i)
+           td(m)=td(i)
+           v(m)=v(i)
+           d(m)=d(i)
+        endif
+      enddo
+
+      RETURN
+      END
+
+C*-----------------------------------------------------------------------
+      SUBROUTINE SWAPTWO(X1,X2)
+      temp=X1
+      X1=X2
+      X2=temp
+      RETURN
+      END
