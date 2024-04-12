@@ -203,7 +203,7 @@ c     +              nlev,z
              write(M5, '(F6.2)') locarr(3,z)  ! ter (SELV)
              write(M10, '(I10)') idate
              write(M11, '(A2)') minute
-             write(M20, '(A40)') idstr(3,z)
+             write(M20, '(A40)') idarr(3,z)
 
              CALL READMval(M1,tt(j))
              CALL READMval(M2,td(j))
