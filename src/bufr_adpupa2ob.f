@@ -3,12 +3,14 @@
       PARAMETER (MXMN = 10)
       PARAMETER (MXLV = 255)
 
-      REAL*8 idarr(MXMN, MXLV),  nlocarr(MXMN, MXLV),
-     +       locarr(MXMN, MXLV), obsarr(MXMN, MXLV) 
+      REAL*8 idarr(MXMN, MXLV), idarr2(MXMN, MXLV),
+     +       nlocarr(MXMN, MXLV), locarr(MXMN, MXLV), 
+     +       obsarr(MXMN, MXLV) 
 
 c  BUFR mnemonics
       CHARACTER*40 idstr, nlocstr, locstr, obstr
-      DATA idstr  /'WMOB WMOS STSN SSTN                     '/
+      DATA idstr  /'WMOB WMOS WMOR STSN SSTN BPID ACID      '/
+      DATA idstr2 /'RSERL RSML RPID                         '/
       DATA nlocstr/'YEAR MNTH DAYS HOUR MINU                '/
       DATA locstr /'CLAT CLON SELV                          '/
       DATA obstr  /'TMDB TMDP PRLC WDIR WSPD                '/
@@ -143,6 +145,7 @@ c  Loop through BUFR subsets
 c  Read data values into arrays
 
         CALL UFBINT(lunit, idarr, MXMN, MXLV, nlevi, idstr)
+        CALL UFBINT(lunit, idarr2, MXMN, MXLV, nlevi, idstr2)
         CALL UFBINT(lunit, nlocarr, MXMN, MXLV, nlevn, nlocstr)
         CALL UFBINT(lunit, locarr, MXMN, MXLV, nlevl, locstr)
         CALL UFBINT(lunit, obsarr, MXMN, MXLV, nlevo, obstr)
@@ -166,30 +169,7 @@ C*-----------------------------------------------------------------------
 c  Prepare output
 
         DO z = 1,nlev
-          IF(obsarr(3,z) .lt. 10E9) THEN  
-
-c             WRITE (UNIT=outstg, FMT='(
-c     +              I10,         ! idate
-c     +              1x,A8,       ! csubset
-c     +              1X,A6,       ! RPID
-c     +              1X,F6.1,     ! YEAR
-c     +              4(1x,F4.1),  ! MNTH, DAYS, HOUR, MINU
-c     +              2(1X,F7.2),  ! CLAT, CLON
-c     +              1X,F6.2,     ! SELV
-c     +              1X,F6.2,     ! TMDB
-c     +              1X,F6.1,     ! TMDP
-c     +              1X,F8.1,     ! PRLC
-c     +              1X,F5.1,     ! WDIR
-c     +              1x,F6.2,     ! WSPD
-c     +              1X,I4,       ! nlev
-c     +              1X,I6        ! z
-c     +              )')
-c     +              idate,csubset,
-c     +              (r8arr(i,1), i = 1,4),
-c     +              (r8arr2(i,1), i = 1,5),
-c     +              (r8arr3(i,z), i = 1,5),
-c     +              nlev,z
-
+          IF(ibfms(obsarr(3,z)) .eq. 0) THEN
              iflag=iflag+1
              j=iflag
 
@@ -203,7 +183,12 @@ c     +              nlev,z
              write(M5, '(F6.2)') locarr(3,z)  ! ter (SELV)
              write(M10, '(I10)') idate
              write(M11, '(A2)') minute
-             write(M20, '(A40)') idarr(3,z)
+
+             if(ibfms(idarr2(3,1) .ne. 0) then
+                write(M20, '(A)') 'RPID: MISSING'
+             else
+                write(M20, '(A,1X,A)') 'RPID:',idarr2(3,1)
+             endif
 
              CALL READMval(M1,tt(j))
              CALL READMval(M2,td(j))
