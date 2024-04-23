@@ -8,7 +8,7 @@
      +       obsarr(MXMN, MXLV) 
 
 c  BUFR mnemonics
-      CHARACTER*40 idstr, nlocstr, locstr, obstr
+      CHARACTER*40 idstr, idstr2, nlocstr, locstr, obstr
       DATA idstr  /'WMOB WMOS WMOR STSN SSTN BPID ACID      '/
       DATA idstr2 /'RSERL RSML RPID                         '/
       DATA nlocstr/'YEAR MNTH DAYS HOUR MINU                '/
@@ -184,7 +184,7 @@ c  Prepare output
              write(M10, '(I10)') idate
              write(M11, '(A2)') minute
 
-             if(ibfms(idarr2(3,1) .ne. 0) then
+             if(ibfms(idarr2(3,1) .ne. 0)) then
                 write(M20, '(A)') 'RPID: MISSING'
              else
                 write(M20, '(A,1X,A)') 'RPID:',idarr2(3,1)
