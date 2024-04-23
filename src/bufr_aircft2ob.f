@@ -189,18 +189,18 @@ c  Prepare output
             zx=zx2
           end if
 
-             if(ibfms(idarr(1,1)) .ne. 0) then
+             if(ibfms(idarr(1,z)) .ne. 0) then
                 write(*, '(A)') 'ACID: MISSING'
                 write(aircftid, '(A40)') 'ACID: MISSING'
              else
-                write(*, '(A,1X,A)') 'ACID:',idarr(1,1)
-                write(aircftid, '(A,1X,A20)') 'ACID:',idarr(1,1)
+                write(*, '(A,1X,A)') 'ACID:',idarr(1,z)
+                write(aircftid, '(A,1X,A20)') 'ACID:',idarr(1,z)
              endif
 
-             if(ibfms(idarr(4,1)) .ne. 0) then
-                write(*, '(A40)') 'RPID: MISSING'
+             if(ibfms(idarr(4,z)) .ne. 0) then
+                write(*, '(A)') 'RPID: MISSING'
              else
-                write(*, '(A,1X,A)') 'RPID:',idarr(4,1)
+                write(*, '(A,1X,A)') 'RPID:',idarr(4,z)
              endif
 
 c------------------------------------------------------------------------
