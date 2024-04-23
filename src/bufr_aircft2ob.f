@@ -191,10 +191,10 @@ c  Prepare output
 
              if(ibfms(idarr(1,1)) .ne. 0) then
                 write(*, '(A)') 'ACID: MISSING'
-                write(aircarid, '(A40)') 'ACID: MISSING'
+                write(aircftid, '(A40)') 'ACID: MISSING'
              else
                 write(*, '(A,1X,A)') 'ACID:',idarr(1,1)
-                write(aircarid, '(A,1X,A20)') 'ACID:',idarr(1,1)
+                write(aircftid, '(A,1X,A20)') 'ACID:',idarr(1,1)
              endif
 
              if(ibfms(idarr(4,1)) .ne. 0) then
@@ -214,7 +214,7 @@ c         Write output
      +       wlon<=lon .and. elon>=lon) then
                write(iou,111) isurf,
      +                        dname,
-     +                        aircarid,
+     +                        aircftid,
      +                        aircftname,
      +                        date,
      +                        mins,
