@@ -9,7 +9,7 @@
       CHARACTER*40 idstr,instr,lstr,obstr
 
 c BUFR mnemonics
-      DATA idstr/'SAID                                    '/ 
+      DATA idstr/'SAID RPID                               '/ 
       DATA instr/'SIID SCLF SIDP SWCM                     '/
       DATA lstr /'YEAR MNTH DAYS HOUR MINU CLAT CLON      '/
       DATA obstr/'TMDBST PRLC WDIR WSPD                   '/
@@ -196,6 +196,13 @@ c       Prepare output
           CALL getcfmng(lunit, 'SAID', saidval, '  ', -1, csadstr, 
      +                  len, iret)
           csad=csadstr(1:40)
+
+             if(ibfms(idarr(2,z)) .ne. 0) then
+                write(*, '(A)') 'RPID: MISSING'
+             else
+                write(*, '(A,1X,A)') 'RPID:',idarr(2,z)
+             endif
+
 
 c       Write to output file
           if (iflag.eq.0) then
