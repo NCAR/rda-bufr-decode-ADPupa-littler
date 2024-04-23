@@ -184,7 +184,7 @@ c  Prepare output
              write(M10, '(I10)') idate
              write(M11, '(A2)') minute
 
-             if(ibfms(idarr2(3,1) .ne. 0)) then
+             if(ibfms(idarr2(3,1)) .ne. 0) then
                 write(M20, '(A)') 'RPID: MISSING'
              else
                 write(M20, '(A,1X,A)') 'RPID:',idarr2(3,1)
