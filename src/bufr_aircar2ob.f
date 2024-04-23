@@ -122,8 +122,8 @@ c  Loop through BUFR subsets
         call readns(lunit, csubset, idate, ierr)
         call ufbcnt(lunit, irec, isub)
 
-        print'(''MESSAGE: '',A8,2(2X,I6),i12 )',
-     +           csubset,irec,isub,idate
+c        print'(''MESSAGE: '',A8,2(2X,I6),i12 )',
+c     +           csubset,irec,isub,idate
 
         IF (ierr .eq.  -1) THEN
           write(*,*) '[bufr_aircar2ob]....all records read.'

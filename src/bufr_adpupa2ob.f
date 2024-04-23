@@ -133,8 +133,8 @@ c  Loop through BUFR subsets
         CALL READNS(lunit, csubset, idate, ierr)
         call ufbcnt(lunit, irec, isub)
 
-        print'(''MESSAGE: '',A8,2(2X,I6),i12 )',
-     +           csubset,irec,isub,idate
+c        print'(''MESSAGE: '',A8,2(2X,I6),i12 )',
+c     +           csubset,irec,isub,idate
 
         IF (ierr .eq.  -1) THEN
           WRITE (*,*) '[bufr_adpupa2ob]....all records read, Exit'

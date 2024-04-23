@@ -122,8 +122,8 @@ c  Loop through BUFR subsets
         CALL READNS(lunit, csubset, idate, ierr)
         call ufbcnt(lunit, irec, isub)
 
-        print'(''MESSAGE: '',A8,2(2X,I6),i12 )',
-     +           csubset,irec,isub,idate
+c        print'(''MESSAGE: '',A8,2(2X,I6),i12 )',
+c     +           csubset,irec,isub,idate
 
         IF (ierr .eq.  -1) THEN
           WRITE(*,*) '[bufr_aircft2ob]....all records read, Exit'
@@ -190,16 +190,12 @@ c  Prepare output
           end if
 
              if(ibfms(idarr(1,z)) .eq. 0) then
-                write(*, '(A,1X,A)') 'ACID:',idarr(1,z)
-                write(aircftid, '(A,1X,A20)') 'ACID:',idarr(1,z)
+                write(aircftid, '(A,1X,A)') 'ACID:',idarr(1,z)
              else if (ibfms(idarr(2,z)) .eq. 0) then
-                write(*, '(A,1X,A)') 'ACRN:',idarr(2,z)
-                write(aircftid, '(A,1X,A20)') 'ACRN:',idarr(2,z)
+                write(aircftid, '(A,1X,A)') 'ACRN:',idarr(2,z)
              else if (ibfms(idarr(4,z)) .eq. 0) then
-                write(*, '(A,1X,A)') 'RPID:',idarr(4,z)
-                write(aircftid, '(A,1X,A20)') 'RPID:',idarr(4,z)
+                write(aircftid, '(A,1X,A)') 'RPID:',idarr(4,z)
              else
-                write(*, '(A)') 'ACID: MISSING'
                 write(aircftid, '(A40)') 'ACID: MISSING'
              endif
 

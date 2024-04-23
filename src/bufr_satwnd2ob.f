@@ -128,8 +128,8 @@ C*    Loop through BUFR subsets
         CALL READNS(lunit, csubset, idate, ierr)
         CALL UFBCNT(lunit, irec, isub)
 
-        print'(''MESSAGE: '',A8,2(2X,I6),i12 )',
-     +           csubset,irec,isub,idate
+c        print'(''MESSAGE: '',A8,2(2X,I6),i12 )',
+c     +           csubset,irec,isub,idate
 
         IF (ierr .eq.  -1 ) THEN
           write(*,*) '[bufr_satwnd2ob]....all records read, Exit'
@@ -196,13 +196,6 @@ c       Prepare output
           CALL getcfmng(lunit, 'SAID', saidval, '  ', -1, csadstr, 
      +                  len, iret)
           csad=csadstr(1:40)
-
-             if(ibfms(idarr(2,z)) .ne. 0) then
-                write(*, '(A)') 'RPID: MISSING'
-             else
-                write(*, '(A,1X,A)') 'RPID:',idarr(2,z)
-             endif
-
 
 c       Write to output file
           if (iflag.eq.0) then
