@@ -197,6 +197,12 @@ c  Prepare output
                 write(aircftid, '(A,1X,A20)') 'ACID:',idarr(1,z)
              endif
 
+             if(ibfms(idarr(2,z)) .ne. 0) then
+                write(*, '(A)') 'ACRN: MISSING'
+             else
+                write(*, '(A,1X,A)') 'ACRN:',idarr(2,z)
+             endif
+
              if(ibfms(idarr(4,z)) .ne. 0) then
                 write(*, '(A)') 'RPID: MISSING'
              else
