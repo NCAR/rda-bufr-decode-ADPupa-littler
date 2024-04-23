@@ -8,7 +8,7 @@
 
 c  BUFR mnemonics
       CHARACTER*40 idstr, nlocstr, locstr, obstr
-      DATA idstr  /'ACID ACRN ARST                          '/
+      DATA idstr  /'ACID ACRN ARST RPID                     '/
       DATA nlocstr/'YEAR MNTH DAYS HOUR MINU                '/
       DATA locstr /'CLATH CLONH PRLC FLVL PSAL CLAT CLON    '/
       DATA obstr  /'MIXR REHU TMDB WDIR WSPD                '/
@@ -189,6 +189,20 @@ c  Prepare output
             zx=zx2
           end if
 
+             if(ibfms(idarr(1,1)) .ne. 0) then
+                write(*, '(A)') 'ACID: MISSING'
+                write(aircarid, '(A40)') 'ACID: MISSING'
+             else
+                write(*, '(A,1X,A)') 'ACID:',idarr(1,1)
+                write(aircarid, '(A,1X,A20)') 'ACID:',idarr(1,1)
+             endif
+
+             if(ibfms(idarr(4,1)) .ne. 0) then
+                write(*, '(A40)') 'RPID: MISSING'
+             else
+                write(*, '(A,1X,A)') 'RPID:',idarr(4,1)
+             endif
+
 c------------------------------------------------------------------------
 c         Write output 
           if (iflag.eq.0) then
@@ -200,7 +214,7 @@ c         Write output
      +       wlon<=lon .and. elon>=lon) then
                write(iou,111) isurf,
      +                        dname,
-     +                        dname,
+     +                        aircarid,
      +                        aircftname,
      +                        date,
      +                        mins,
