@@ -44,7 +44,7 @@ c  BUFR mnemonics
 
       INTEGER lun, il, im
       CHARACTER*80 desc
-      CHARACTER*40 adpupaname, adpupaid
+      CHARACTER*40 adpupaname(nz)
 
 C*-----------------------------------------------------------------------
 c*    Read the command-line arguments
@@ -163,13 +163,12 @@ c  Read data values into arrays
 c  Get Table D index for csubset mnemonic, and get the description
         CALL nemtab(lun, csubset, idn, tab, n)
         desc=tabd(n, lun)(16:70)
-        write(adpupaname, '(A40)') desc(15:)
 
 C*-----------------------------------------------------------------------
 c  Prepare output
 
         DO z = 1,nlev
-          IF(ibfms(obsarr(3,z)) .eq. 0) THEN
+c          IF(ibfms(obsarr(3,z)) .eq. 0) THEN
              iflag=iflag+1
              j=iflag
 
@@ -206,7 +205,9 @@ c  Prepare output
              date(j)=M10
              mins(j)=M11
              staid(j)=M20
-         ENDIF 
+             write(adpupaname(j), '(A40)') desc(15:)
+
+c         ENDIF 
         END DO
       END DO
 
