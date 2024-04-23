@@ -146,8 +146,13 @@ C* Read data values into arrays
            nlev=nlevi
         endif
 
-        minu=int(nlocarr(5,1))
-        write (unit=minute, FMT='(I2)') minu
+        if (ibfms(nlocarr(5,1)) .eq. 1) then
+           minu=0
+           minute='00'
+        else
+           minu=int(nlocarr(5,1))
+           write (unit=minute, FMT='(I2)') minu
+        endif
 
         DO k=1,2
            IF ( minute (k:k) .eq. ' ' .or. minute(k:k) .eq. '*') THEN
