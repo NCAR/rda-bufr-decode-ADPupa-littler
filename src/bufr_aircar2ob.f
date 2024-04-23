@@ -197,6 +197,12 @@ c         Prepare output
                 write(*, '(A,1X,A)') 'ACID:',idarr(1,1)
 c                write(M20, '(A,1X,A)') 'ACID:',idarr(1,1)
              endif
+             if(ibfms(idarr(4,1)) .ne. 0) then
+                write(M20, '(A)') 'RPID: MISSING'
+             else
+                write(*, '(A,1X,A)') 'RPID:',idarr(4,1)
+c                write(M20, '(A,1X,A)') 'RPID:',idarr(4,1)
+             endif
 
 c          aircarid=repeat(' ',40)
 c          write(aircarid, '(F8.1)') idarr(1,z)
