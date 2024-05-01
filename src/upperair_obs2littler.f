@@ -69,11 +69,12 @@ c  loop through observations in input file
 c-----7---------------------------------------------------------------72
       do 444 iter=1,maxob
 
-      call miss(kx,p,z,t,td,spd,dir,slp,ter,dname,staid,staname)
-      call getdat(iu,isurf,nlev,p,z,t,td,spd,dir,slp,ter,
-     & xlat,xlon,dname,staid,staname,bogus,iflag,mdate)
+      call miss(kx, p, z, t, td, spd, dir, slp, ter, 
+     +          dname, staid, staname)
+      call getdat(iu, isurf, nlev, p, z, t, td, spd, dir, slp, ter,
+     +            xlat, xlon, dname, staid, staname, source, 
+     +            bogus, iflag, mdate)
       call wmo_codename(isurf,dname,codestr) 
-      source='                                        '
 	    if (iflag .eq. 0)then
         write(*,111)fin(i)
 111   format('finished file : ',a30)
@@ -105,10 +106,11 @@ c Set desired area
 c-----7---------------------------------------------------------------72
 c  Subroutine to fill -888888. in place of missing data
 
-      subroutine miss(kx,p,z,t,td,spd,dir,slp,ter,dname,staid,staname)
+      subroutine miss(kx,p,z,t,td,spd,dir,slp,ter,
+     +                dname,staid,staname,source)
       real p(kx),z(kx),t(kx),td(kx),spd(kx),dir(kx)
       character*6 dname
-      character*40 staid, staname
+      character*40 staid, staname, source
 
       do k=1,kx
         p(k)=-888888.
@@ -124,6 +126,7 @@ c  Subroutine to fill -888888. in place of missing data
       dname = '99001 '
       staid   = '99001                                   '
       staname = '99001                                   '
+      source = '99001                                   '
 
       return
       end
@@ -132,21 +135,22 @@ c-----7---------------------------------------------------------------72
 c subroutine to read data from file unit
 
       subroutine getdat(iunit,isurf,nlev,p,z,t,td,spd,dir,slp,ter,
-     &  xlat,xlon,dname,staid,staname,bogus,iflag,mdate)
+     &  xlat,xlon,dname,staid,staname,source,bogus,iflag,mdate)
 
       parameter (kx=500)
       real p(kx),z(kx),t(kx),td(kx),spd(kx),dir(kx)
       real px(kx),zx(kx),tx(kx),tdx(kx),spdx(kx),dirx(kx)
       character*6 dname
-      character*40 staid,staname
+      character*40 staid,staname,source
       character*12 mdate
       logical bogus
 
       bogus=.TRUE.
       dmiss = 99999.9
 
-      read(iunit,113,end=1000)isurf,dname,staid,staname,mdate,xlat,
-     &     xlon,xter,xslp,nlev,ibogus
+      read(iunit,113,end=1000) 
+     +     isurf, dname, staid, staname, source,
+     +     mdate, xlat, xlon, xter, xslp, nlev, ibogus
 113   format(i1,1x,a6,2(1x,a40),1x,a12,4(f7.1,1x),i3,1x,i1)
 
       if (xter .ne. dmiss) ter = xter
@@ -251,17 +255,17 @@ c-----7---------------------------------------------------------------72
 c-----7---------------------------------------------------------------72
 c  Subroutine to write data in a specified format for little_r
 
-      SUBROUTINE write_obs ( p , z , t , td , spd , dir , 
-     &                      slp , ter , xlat , xlon , mdate , kx , 
-     & string1 , string2 , string3 , string4 , bogus , iseq_num ,
-     & iounit1 )
+      SUBROUTINE write_obs (p, z, t, td, spd, dir, 
+     +                      slp, ter, xlat, xlon, mdate, kx, 
+     +                      string1, string2, string3, string4, 
+     +                      bogus, iseq_num, iounit1)
 
       dimension p(kx), z(kx),t(kx),td(kx),spd(kx),dir(kx)
 
       integer iounit1
       character *20 date_char
       character *12 mdate
-      character *40 string1, string2 , string3 , string4
+      character *40 string1, string2, string3, string4
       CHARACTER *84  rpt_format 
       CHARACTER *22  meas_format 
       CHARACTER *14  end_format
@@ -270,11 +274,11 @@ c changed Osuri
       iseq_num =0      
 c changed Osuri end
 
-      rpt_format =  ' ( 2f20.5 , 2a40 , '
-     &             // ' 2a40 , 1f20.5 , 5i10 , 3L10 , '
-     &             // ' 2i10 , a20 ,  13( f13.5 , i7 ) ) '
-      meas_format =  ' ( 10( f13.5 , i7 ) ) '
-      end_format = ' ( 3 ( i7 ) ) ' 
+      rpt_format = '(2f20.5, 2a40, '
+     +          //  '2a40, 1f20.5, 5i10, 3L10, '
+     +          //  '2i10, a20, 13(f13.5, i7))'
+      meas_format = '(10(f13.5, i7))'
+      end_format = '(3(i7))'
       write (date_char(7:18),fmt='(a12)') mdate
 c     if (mdate/1000000 .GT. 70 ) then
 c        date_char(7:8)='19'
@@ -284,34 +288,33 @@ c     endif
       date_char(19:20)='00'
       date_char(1:6)='      '
 
-      WRITE ( UNIT = iounit1 , ERR = 19 , FMT = rpt_format ) 
-     &        xlat,xlon, string1 , string2 , 
-     &        string3 , string4 , ter, kx, 0,0,iseq_num,0, 
-     &        .true.,bogus,.false., 
-     &         -888888, -888888, date_char , 
-     &         slp,0,-888888.,0, -888888.,0, -888888.,0, -888888.,0, 
-     &               -888888.,0, 
-     &               -888888.,0, -888888.,0, -888888.,0, -888888.,0, 
-     &               -888888.,0, 
-     &               -888888.,0, -888888.,0
+      WRITE (UNIT=iounit1, ERR=19, FMT=rpt_format) 
+     +       xlat, xlon, string1, string2, string3, string4, 
+     +       ter, kx, 0, 0, iseq_num, 0, 
+     +       .true., bogus, .false., 
+     +       -888888, -888888, date_char, slp, 0,
+     +       -888888., 0, -888888., 0, -888888., 0, -888888., 0,
+     +       -888888., 0, -888888., 0, -888888., 0, -888888., 0,
+     +       -888888., 0, -888888., 0, -888888., 0, -888888., 0
    
       do 100 k = 1 , kx
-         WRITE ( UNIT = iounit1 , ERR = 19 , FMT = meas_format ) 
-     &          p(k), 0, z(k),0, t(k),0, td(k),0, 
-     &          spd(k),0, dir(k),0, 
-     &          -888888.,0, -888888.,0,-888888.,0, -888888.,0
+         WRITE (UNIT=iounit1, ERR=19, FMT=meas_format) 
+     +          p(k), 0, z(k), 0, t(k), 0, 
+     +          td(k), 0, spd(k), 0, dir(k), 0, 
+     +          -888888., 0, -888888., 0,-888888., 0, -888888., 0
 100   continue
-      WRITE ( UNIT = iounit1 , ERR = 19 , FMT = meas_format ) 
-     & -777777.,0, -777777.,0,float(kx),0,
-     & -888888.,0, -888888.,0, -888888.,0, 
-     & -888888.,0, -888888.,0, -888888.,0, 
-     & -888888.,0
-      WRITE ( UNIT = iounit1 , ERR = 19 , FMT = end_format )  kx, 0, 0
+
+      WRITE (UNIT=iounit1, ERR=19, FMT=meas_format) 
+     +       -777777., 0, -777777., 0, float(kx), 0,
+     +       -888888., 0, -888888., 0, -888888., 0, 
+     +       -888888., 0, -888888., 0, -888888., 0, 
+     +       -888888., 0
+      WRITE (UNIT=iounit1, ERR=19, FMT=end_format) kx, 0, 0
 
       return
 19    continue
 
-      print *,'error writing upper air data'
+      print*, 'error writing upper air data'
       stop 19
 
       END

@@ -41,7 +41,7 @@ c BUFR mnemonics
       CHARACTER*80 csid
       CHARACTER*255 csadstr
       CHARACTER*80 desc
-      CHARACTER*40 satname, satid
+      CHARACTER*40 satname, satid, satwndsource
 
 C*-----------------------------------------------------------------------
 c*    Read the command-line arguments
@@ -81,6 +81,7 @@ C*    Open BUFR input file
       OPEN (UNIT=lunit, FILE=inf, form='unformatted')
 
       dname=' SATOB'
+      satwndsource='NCEP GDAS BUFR SATWND observations      '
       fout= "satwnd"//date_tag//'.obs'
 
 C*    Open output file
@@ -213,6 +214,7 @@ c       Write to output file
      +                         dname,
      +                         csad,
      +                         satname,
+     +                         satwndsource,
      +                         date,
      +                         mins,
      +                         lat,
@@ -223,7 +225,7 @@ c       Write to output file
      +                         ibogus
                write(iou,112) pr,zx,tt,td,wdir,wspd
           endif
-111       format(i1,1x,a6,2(1x,a40),1x,a10,a2,4(f7.1,1x),i3,1x,i1)
+111       format(i1,1x,a6,3(1x,a40),1x,a10,a2,4(f7.1,1x),i3,1x,i1)
 112       format(6(f7.1,1x))
 
         END DO

@@ -36,7 +36,7 @@ c BUFR mnemonics
 
       INTEGER lun, il, im
       CHARACTER*80 desc
-      CHARACTER*40 aircarname, aircarid
+      CHARACTER*40 aircarname, aircarid, aircarsource
 
 C*-----------------------------------------------------------------------
 c*    Read the command-line arguments
@@ -75,6 +75,7 @@ C*    Open BUFR input file
       OPEN(UNIT=lunit, FILE=inf, form='unformatted')
 
       dname=' AIREP'
+      aircarsource='NCEP GDAS BUFR AIRCAR observations      '
       fout= "aircar"//date_tag//'.obs'
 
 c     Open output file
@@ -214,6 +215,7 @@ c         Write output
      +                     dname,
      +                     aircarid,
      +                     aircarname,
+     +                     aircarsource,
      +                     date,
      +                     mins,
      +                     lat,
@@ -224,7 +226,7 @@ c         Write output
      +                     ibogus
             write(iou,112) pr,zx,tt,td,wdir,wspd
           endif
-111       format(i1,1x,a6,2(1x,a40),1x,a10,a2,4(f7.1,1x),i3,1x,i1)
+111       format(i1,1x,a6,3(1x,a40),1x,a10,a2,4(f7.1,1x),i3,1x,i1)
 112       format(6(f7.1,1x))
           
         ENDDO

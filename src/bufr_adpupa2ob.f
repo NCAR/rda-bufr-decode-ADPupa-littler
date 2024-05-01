@@ -44,7 +44,7 @@ c  BUFR mnemonics
 
       INTEGER lun, il, im
       CHARACTER*80 desc
-      CHARACTER*40 adpupaname(nz)
+      CHARACTER*40 adpupaname(nz), adpupasource
 
 C*-----------------------------------------------------------------------
 c*    Read the command-line arguments
@@ -83,6 +83,7 @@ c  Open BUFR input file
       OPEN(UNIT=lunit, FILE=inf, form='unformatted')
 
       dname='  TEMP'
+      adpupasource='NCEP GDAS BUFR ADPUPA observations      '
       fout="adpupa"//date_tag//'.obs'
 
 c  Open output file
@@ -241,6 +242,7 @@ c  write output
      +                           dname,
      +                           staid(l),
      +                           adpupaname(l),
+     +                           adpupasource,
      +                           date(l),
      +                           mins(l),
      +                           lat(l),
@@ -264,7 +266,7 @@ c  write output
           endif
         enddo
 
-111     format(i1,1x,a6,2(1x,a40),1x,a10,a2,4(f7.1,1x),i3,1x,i1)
+111     format(i1,1x,a6,3(1x,a40),1x,a10,a2,4(f7.1,1x),i3,1x,i1)
 112     format(6(f7.1,1x))
       
         CALL SORTWRITE(pr,zx,tt,td,d,v,l,l1,m)
@@ -272,6 +274,7 @@ c  write output
      +                 dname,
      +                 staid(l),
      +                 adpupaname(l),
+     +                 adpupasource,
      +                 date(l),
      +                 mins(l),
      +                 lat(l),
