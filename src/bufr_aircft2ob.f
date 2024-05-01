@@ -139,7 +139,7 @@ c  Read data values into arrays
         CALL UFBINT(lunit, locarr, MXMN, MXLV, nlevl, locstr)
         CALL UFBINT(lunit, obsarr, MXMN, MXLV, nlevo, obstr)
 
-        nlev=nlevo
+        nlev=1
 
         if (ibfms(nlocarr(5,1)) .eq. 1) then
            minu=0
