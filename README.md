@@ -33,4 +33,7 @@ https://emc.ncep.noaa.gov/emc/pages/infrastructure/bufrlib.php
 
 Definitions for BUFR MNEMONIC headers can be found in the doc directory 
 and at: 
-https://www.emc.ncep.noaa.gov/emc/pages/infrastructure/bufrlib/tables/bufrtab_tableb.html 		
+https://www.emc.ncep.noaa.gov/emc/pages/infrastructure/bufrlib/tables/bufrtab_tableb.html
+
+WRF documentation on the LITTLE_R format:
+https://www2.mmm.ucar.edu/wrf/users/wrfda/OnlineTutorial/Help/littler.html
