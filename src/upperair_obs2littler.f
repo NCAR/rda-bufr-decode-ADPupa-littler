@@ -134,14 +134,16 @@ c  Subroutine to fill -888888. in place of missing data
 c-----7---------------------------------------------------------------72
 c subroutine to read data from file unit
 
-      subroutine getdat(iunit,isurf,nlev,p,z,t,td,spd,dir,slp,ter,
-     &  xlat,xlon,dname,staid,staname,source,bogus,iflag,mdate)
+      subroutine getdat(iunit, isurf, nlev, 
+     +                  p, z, t, td, spd, dir, slp, ter,
+     +                  xlat, xlon, dname, 
+     +                  staid, staname, source, bogus, iflag, mdate)
 
       parameter (kx=500)
-      real p(kx),z(kx),t(kx),td(kx),spd(kx),dir(kx)
-      real px(kx),zx(kx),tx(kx),tdx(kx),spdx(kx),dirx(kx)
+      real p(kx), z(kx), t(kx), td(kx), spd(kx), dir(kx)
+      real px(kx), zx(kx), tx(kx), tdx(kx), spdx(kx), dirx(kx)
       character*6 dname
-      character*40 staid,staname,source
+      character*40 staid, staname, source
       character*12 mdate
       logical bogus
 
@@ -158,8 +160,9 @@ c subroutine to read data from file unit
       if(ibogus.eq.0) bogus=.FALSE.
 
 	      do kk=1,nlev
-	        read(iunit,114,end=1000) px(kk),zx(kk),tx(kk),tdx(kk),
-     +       dirx(kk),spdx(kk)
+	        read(iunit,114,end=1000) 
+     +         px(kk), zx(kk), tx(kk), 
+     +         tdx(kk), dirx(kk), spdx(kk)
           
           if (px(kk) .ne. dmiss)     p(kk) = px(kk)*100.
 	        if (zx(kk) .ne. dmiss)     z(kk) = zx(kk)
