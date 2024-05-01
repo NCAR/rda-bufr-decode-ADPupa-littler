@@ -2,7 +2,6 @@
 
 # Script to process all BUFR tar files located in "bufrdecodelr/bufrobs"
 
-
 # !! Edit procdir directory to reflect your local system !!
 
 set procdir=`pwd`/..
@@ -33,28 +32,29 @@ foreach dir (upaobs.*????)
     
       echo "$procdir/exe/bufr_aircar2ob.x $procdir/bufrobs/upaobs.$date/gdas.aircar.$hour.$date.bufr $datehh"
       $procdir/exe/bufr_aircar2ob.x $procdir/bufrobs/upaobs.$date/gdas.aircar.$hour.$date.bufr $datehh
-      echo "$procdir/exe/bufr_craft2ob.x $procdir/bufrobs/upaobs.$date/gdas.aircft.$hour.$date.bufr $datehh"
-      $procdir/exe/bufr_craft2ob.x $procdir/bufrobs/upaobs.$date/gdas.aircft.$hour.$date.bufr $datehh 
-      echo "$procdir/exe/bufr_upa2ob.x $procdir/bufrobs/upaobs.$date/gdas.adpupa.$hour.$date.bufr $datehh"
-      $procdir/exe/bufr_upa2ob.x $procdir/bufrobs/upaobs.$date/gdas.adpupa.$hour.$date.bufr $datehh 
-      echo "$procdir/exe/bufr_sat2ob.x $procdir/bufrobs/upaobs.$date/gdas.satwnd.$hour.$date.bufr $datehh"
-      $procdir/exe/bufr_sat2ob.x $procdir/bufrobs/upaobs.$date/gdas.satwnd.$hour.$date.bufr $datehh 
+
+      echo "$procdir/exe/bufr_aircft2ob.x $procdir/bufrobs/upaobs.$date/gdas.aircft.$hour.$date.bufr $datehh"
+      $procdir/exe/bufr_aircft2ob.x $procdir/bufrobs/upaobs.$date/gdas.aircft.$hour.$date.bufr $datehh 
+
+      echo "$procdir/exe/bufr_adpupa2ob.x $procdir/bufrobs/upaobs.$date/gdas.adpupa.$hour.$date.bufr $datehh"
+      $procdir/exe/bufr_adpupa2ob.x $procdir/bufrobs/upaobs.$date/gdas.adpupa.$hour.$date.bufr $datehh 
+
+      echo "$procdir/exe/bufr_satwnd2ob.x $procdir/bufrobs/upaobs.$date/gdas.satwnd.$hour.$date.bufr $datehh"
+      $procdir/exe/bufr_satwnd2ob.x $procdir/bufrobs/upaobs.$date/gdas.satwnd.$hour.$date.bufr $datehh 
     
-      echo Airca$datehh.obs >files.txt
-      echo Aircraft$datehh.obs >>files.txt
-      echo Satob$datehh.obs >>files.txt
-      echo Upper$datehh.obs >>files.txt
+      echo aircar$datehh.obs >files.txt
+      echo aircft$datehh.obs >>files.txt
+      echo satwnd$datehh.obs >>files.txt
+      echo adpupa$datehh.obs >>files.txt
     
-      echo "$procdir/exe/runob2lit_imd_obs.x files.txt $datehh"
-      $procdir/exe/runob2lit_imd_obs.x files.txt $datehh
+      echo "$procdir/exe/upperair_obs2littler.x files.txt $datehh"
+      $procdir/exe/upperair_obs2littler.x files.txt $datehh
     
-      rm Airca$datehh.obs 
-      rm Aircraft$datehh.obs
-      rm Satob$datehh.obs 
-      rm Upper$datehh.obs
-    
+      rm aircar$datehh.obs 
+      rm aircft$datehh.obs
+      rm satwnd$datehh.obs 
+      rm adpupa$datehh.obs
       rm files.txt
-    
       mv *OBS* $procdir/lrobs
   end
    
