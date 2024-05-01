@@ -149,11 +149,11 @@ C*      Read data values into arrays
            nlev=nlevi
         endif
 
-        if (ibfms(nlocarr(5,1)) .eq. 1) then
+        if (ibfms(locarr(5,1)) .eq. 1) then
            minu=0
            minute='00'
         else
-           minu=int(nlocarr(5,1))
+           minu=int(locarr(5,1))
            write (unit=minute, FMT='(I2)') minu
         endif
 
