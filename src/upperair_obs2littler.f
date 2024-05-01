@@ -28,7 +28,7 @@
 !     ... bogus data are not subject to quality control
 !=================================================================================
       parameter (kx=500)
-      integer i, iargc, n
+      integer i, iargc, n, mdatea
       real p(kx),z(kx),t(kx),td(kx),spd(kx),dir(kx)
       logical bogus
       character*30 fin(20),fout1,fout2
@@ -41,7 +41,7 @@
       parameter (maxob=9999999)
 
       n = iargc()
-      call getarg( 1, argv )
+      call getarg(1, argv)
       fn=argv
       call getarg(2,argv)
       time_tag=argv
@@ -70,7 +70,7 @@ c-----7---------------------------------------------------------------72
       do 444 iter=1,maxob
 
       call miss(kx, p, z, t, td, spd, dir, slp, ter, 
-     +          dname, staid, staname)
+     +          dname, staid, staname, source)
       call getdat(iu, isurf, nlev, p, z, t, td, spd, dir, slp, ter,
      +            xlat, xlon, dname, staid, staname, source, 
      +            bogus, iflag, mdate)
@@ -106,9 +106,9 @@ c Set desired area
 c-----7---------------------------------------------------------------72
 c  Subroutine to fill -888888. in place of missing data
 
-      subroutine miss(kx,p,z,t,td,spd,dir,slp,ter,
-     +                dname,staid,staname,source)
-      real p(kx),z(kx),t(kx),td(kx),spd(kx),dir(kx)
+      subroutine miss(kx, p, z, t, td, spd, dir, slp, ter,
+     +                dname, staid, staname, source)
+      real p(kx), z(kx), t(kx), td(kx), spd(kx), dir(kx)
       character*6 dname
       character*40 staid, staname, source
 
