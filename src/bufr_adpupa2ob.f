@@ -265,7 +265,7 @@ c  write output
           endif
         enddo
 
-111     format(i1,1x,a6,3(1x,a40),1x,a10,a2,4(f7.1,1x),i3,1x,i1)
+111     format(i1,1x,a6,3(1x,a40),1x,a10,a2,4(f7.1,1x),i5,1x,i1)
 112     format(6(f7.1,1x))
       
         CALL SORTWRITE(pr,zx,tt,td,d,v,l,l1,m)
