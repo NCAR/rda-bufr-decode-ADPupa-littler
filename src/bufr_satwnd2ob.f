@@ -17,6 +17,7 @@ c BUFR mnemonics
       DATA obstr/'TMDBST PRLC WDIR WSPD                   '/
 
       PARAMETER (iu=9, iou=10, lunit=11)
+      PARAMETER (dumm=99999.9)
 
       INTEGER year,month,days,hour
       real lat,lon,pr,tt,td,wdir,wspd
@@ -92,7 +93,6 @@ C*    Open output file
 
       iflag=0
       nlev=1
-      dumm=99999.9
 
       isurf = 0
       ibogus = 0
@@ -187,22 +187,8 @@ c       Prepare output
           CALL READMval(M5,wdir)
           CALL READMval(M6,wspd)
 
-C Get latitude and longitude from either CLAT/CLON or CLATH/CLONH
-            IF (ibfms(locarr2(1,z)) .EQ. 0) THEN
-               lat = locarr2(1,z)
-            ELSE IF (ibfms(locarr2(3,z)) .EQ. 0) THEN
-               lat = locarr2(3,z)
-            ELSE
-               lat = dumm
-            ENDIF
-
-            IF (ibfms(locarr2(2,z)) .EQ. 0) THEN
-               lon = locarr2(2,z)
-            ELSE IF (ibfms(locarr2(4,z)) .EQ. 0) THEN
-               lon = locarr2(4,z)
-            ELSE
-               lon = dumm
-            ENDIF
+          CALL get_lat_lon(locarr2(1,z), locarr2(3,z), lat)
+          CALL get_lat_lon(locarr2(2,z), locarr2(4,z), lon)
 
           date=M10
           mins=M11
