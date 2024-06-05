@@ -203,7 +203,7 @@ c          IF(ibfms(obsarr(3,z)) .eq. 0) THEN
 C Get latitude and longitude from either CLAT/CLON or CLATH/CLONH
             IF (ibfms(locarr(1,z)) .EQ. 0) THEN
                lat(j) = locarr(1,z)
-            ELSE IF (ibfms(locarr(4,z) .EQ. 0) THEN
+            ELSE IF (ibfms(locarr(4,z)) .EQ. 0) THEN
                lat(j) = locarr(4,z)
             ELSE
                lat(j) = dumm
@@ -211,7 +211,7 @@ C Get latitude and longitude from either CLAT/CLON or CLATH/CLONH
 
             IF (ibfms(locarr(2,z)) .EQ. 0) THEN
                lon(j) = locarr(2,z)
-            ELSE IF (ibfms(locarr(5,z) .EQ. 0) THEN
+            ELSE IF (ibfms(locarr(5,z)) .EQ. 0) THEN
                lon(j) = locarr(5,z)
             ELSE
                lon(j) = dumm
