@@ -200,22 +200,8 @@ c          IF(ibfms(obsarr(3,z)) .eq. 0) THEN
              CALL READMval(M5,ter(j))
              CALL READMval(xpr,pr(j))
 
-C Get latitude and longitude from either CLAT/CLON or CLATH/CLONH
-            IF (ibfms(locarr(1,z)) .EQ. 0) THEN
-               lat(j) = locarr(1,z)
-            ELSE IF (ibfms(locarr(4,z)) .EQ. 0) THEN
-               lat(j) = locarr(4,z)
-            ELSE
-               lat(j) = dumm
-            ENDIF
-
-            IF (ibfms(locarr(2,z)) .EQ. 0) THEN
-               lon(j) = locarr(2,z)
-            ELSE IF (ibfms(locarr(5,z)) .EQ. 0) THEN
-               lon(j) = locarr(5,z)
-            ELSE
-               lon(j) = dumm
-            ENDIF
+             CALL get_lat_lon(locarr(1,z), locarr(4,z), lat(j))
+             CALL get_lat_lon(locarr(2,z), locarr(5,z), lon(j))
         
              if(pr(j).ne.0 .and. pr(j).ne.99999.9) then
                 pr(j)= pr(j)/100
@@ -308,6 +294,30 @@ C*-----------------------------------------------------------------------
 
       END
 
+C*-----------------------------------------------------------------------
+       SUBROUTINE get_lat_lon(clatlon, clatlonh, retval)
+
+C      Get latitude and longitude from either CLAT/CLON or CLATH/CLONH
+c      Input:
+c         clatlon: CLAT or CLON returned by UFBINT
+c         clatlonh: CLATH or CLONH returned by UFBINT
+c      Output:
+c         retval: latitude or longitude value
+
+       real*8 clatlon, clatlonh, retval, dumm
+       dumm=99999.9
+
+       IF (ibfms(clatlon) .EQ. 0) THEN
+          retval = clatlon
+       ELSE IF (ibfms(clatlonh) .EQ. 0) THEN
+          retval = clatlonh
+       ELSE
+          retval = dumm
+       ENDIF
+       
+       RETURN
+       END
+       
 C*-----------------------------------------------------------------------
       SUBROUTINE READMval(M1,fl)
       character*8 M1 
