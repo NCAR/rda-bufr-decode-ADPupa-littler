@@ -12,7 +12,7 @@ c  BUFR mnemonics
       DATA idstr  /'WMOB WMOS WMOR STSN SSTN BPID ACID      '/
       DATA idstr2 /'RSERL RSML RPID                         '/
       DATA nlocstr/'YEAR MNTH DAYS HOUR MINU                '/
-      DATA locstr /'CLAT CLON SELV                          '/
+      DATA locstr /'CLAT CLON SELV CLATH CLONH              '/
       DATA obstr  /'TMDB TMDP PRLC WDIR WSPD                '/
 
       parameter(iu=9,iou=10,lunit=11,nz=9999999)
@@ -178,9 +178,6 @@ c  Prepare output
 c          IF(ibfms(obsarr(3,z)) .eq. 0) THEN
              iflag=iflag+1
              j=iflag
-
-             write(xlat, '(F7.2)') locarr(1,z)  ! lat (CLAT)
-             write(xlon, '(F7.2)') locarr(2,z)  ! lon (CLON)
              write(xpr, '(F8.1)') obsarr(3,z)  ! pr
              write(M1, '(F6.2)') obsarr(1,z)  ! tt
              write(M2, '(F6.2)') obsarr(2,z)  ! td
@@ -201,9 +198,24 @@ c          IF(ibfms(obsarr(3,z)) .eq. 0) THEN
              CALL READMval(M3,d(j))
              CALL READMval(M4,v(j))
              CALL READMval(M5,ter(j))
-             CALL READMval(xlat,lat(j))
-             CALL READMval(xlon,lon(j))
              CALL READMval(xpr,pr(j))
+
+C Get latitude and longitude from either CLAT/CLON or CLATH/CLONH
+            IF (ibfms(locarr(1,z)) .EQ. 0) THEN
+               lat(j) = locarr(1,z)
+            ELSE IF (ibfms(locarr(4,z) .EQ. 0) THEN
+               lat(j) = locarr(4,z)
+            ELSE
+               lat(j) = dumm
+            ENDIF
+
+            IF (ibfms(locarr(2,z)) .EQ. 0) THEN
+               lon(j) = locarr(2,z)
+            ELSE IF (ibfms(locarr(5,z) .EQ. 0) THEN
+               lon(j) = locarr(5,z)
+            ELSE
+               lon(j) = dumm
+            ENDIF
         
              if(pr(j).ne.0 .and. pr(j).ne.99999.9) then
                 pr(j)= pr(j)/100
