@@ -16,6 +16,8 @@ c  BUFR mnemonics
       DATA obstr  /'TMDB TMDP PRLC WDIR WSPD                '/
 
       parameter(iu=9,iou=10,lunit=11,nz=9999999)
+      parameter(dumm=99999.9)
+      
       dimension pr(nz),tt(nz),td(nz)
       integer  xht,nlev,i, iargc, n,minu,k
       real  xu,xv,xy,xm,xh,xmm,xd
@@ -90,7 +92,6 @@ c  Open output file
       open(iou, file=fout, status='unknown', form='formatted')
 
       iflag = 0
-      dumm=99999.9
 
       iupper=0
       ibogus=0
