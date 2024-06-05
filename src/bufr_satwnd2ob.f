@@ -113,9 +113,6 @@ C*    the BUFR file itself, thus the logical unit for the BUFR tables
 C*    file is the same as the BUFR file itself.
       CALL OPENBF(lunit, 'IN', lunit)
 
-c     Get file ID (lun) associated with the BUFR file
-      CALL status(lunit, lun, il, im)
-
 c     Include code and flag table information from master BUFR tables
       CALL codflg('Y')
 
@@ -127,6 +124,9 @@ C*-----------------------------------------------------------------------
 C*    Loop through BUFR subsets
 
       DO WHILE(.true.)
+
+c       Get file ID (lun) associated with the BUFR file
+        CALL status(lunit, lun, il, im)
 
         CALL READNS(lunit, csubset, idate, ierr)
         CALL UFBCNT(lunit, irec, isub)
