@@ -4,14 +4,16 @@
       PARAMETER (MXLV = 255)
 
       REAL*8  idarr(MXMN, MXLV), instarr(MXMN, MXLV),
-     +        locarr(MXMN, MXLV), obsarr(MXMN, MXLV) 
+     +        locarr(MXMN, MXLV), locarr2(MXMN, MXLV), 
+     +        obsarr(MXMN, MXLV) 
 
-      CHARACTER*40 idstr,instr,lstr,obstr
+      CHARACTER*40 idstr,instr,lstr,lstr2,obstr
 
 c BUFR mnemonics
       DATA idstr/'SAID RPID                               '/ 
       DATA instr/'SIID SCLF SIDP SWCM                     '/
-      DATA lstr /'YEAR MNTH DAYS HOUR MINU CLAT CLON      '/
+      DATA lstr /'YEAR MNTH DAYS HOUR MINU                '/
+      DATA lstr2/'CLAT CLON CLATH CLONH                   '/
       DATA obstr/'TMDBST PRLC WDIR WSPD                   '/
 
       PARAMETER (iu=9, iou=10, lunit=11)
@@ -141,6 +143,7 @@ c     +           csubset,irec,isub,idate
 C*      Read data values into arrays
         CALL UFBINT(lunit, idarr, MXMN, MXLV, nlevi, idstr)
         CALL UFBINT(lunit, locarr, MXMN, MXLV, nlevl, lstr)
+        CALL UFBINT(lunit, locarr2, MXMN, MXLV, nlevl, lstr2)
         CALL UFBINT(lunit, obsarr, MXMN, MXLV, nlevo, obstr)
 
         if(nlevi .ne. nlevl .or. nlevi .ne. nlevo) then
@@ -173,21 +176,33 @@ C*-----------------------------------------------------------------------
 c       Prepare output
 
         DO z = 1, nlev
-          write(M1, '(F7.2)') locarr(6,z)  ! lat
-          write(M2, '(F7.2)') locarr(7,z)  ! lon
           write(M3, '(F6.2)') obsarr(1,z)  ! tt
           write(M4, '(F7.1)') obsarr(2,z)  ! pr
           write(M5, '(F5.1)') obsarr(3,z)  ! wdir
           write(M6, '(F6.2)') obsarr(4,z)  ! wspd
           write(M10, '(I10)') idate
           write(M11, '(A2)') minute
-
-          CALL READMval(M1,lat)
-          CALL READMval(M2,lon)
           CALL READMval(M3,tt)
           CALL READMval(M4,pr)
           CALL READMval(M5,wdir)
           CALL READMval(M6,wspd)
+
+C Get latitude and longitude from either CLAT/CLON or CLATH/CLONH
+            IF (ibfms(locarr2(1,z)) .EQ. 0) THEN
+               lat = locarr2(1,z)
+            ELSE IF (ibfms(locarr2(3,z) .EQ. 0) THEN
+               lat = locarr2(3,z)
+            ELSE
+               lat = dumm
+            ENDIF
+
+            IF (ibfms(locarr2(2,z)) .EQ. 0) THEN
+               lon = locarr2(2,z)
+            ELSE IF (ibfms(locarr2(4,z) .EQ. 0) THEN
+               lon = locarr2(4,z)
+            ELSE
+               lon = dumm
+            ENDIF
 
           date=M10
           mins=M11
