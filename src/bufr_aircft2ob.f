@@ -106,9 +106,6 @@ C* Connect BUFR file to the BUFRLIB software for input operations.
 C* Specify that we would like IDATE values returned using 10 digits
 C*      (i.e. YYYYMMDDHH ).
 
-c  Get file ID (lun) associated with the BUFR file
-      CALL status(lunit, lun, il, im)
-
 c  Include code and flag table information from master BUFR tables
       CALL codflg('Y')
 
@@ -119,6 +116,9 @@ C*-----------------------------------------------------------------------
 c  Loop through BUFR subsets
 
       DO WHILE (.true.)
+
+c       Get file ID (lun) associated with the BUFR file
+        CALL status(lunit, lun, il, im)
 
         CALL READNS(lunit, csubset, idate, ierr)
         call ufbcnt(lunit, irec, isub)
