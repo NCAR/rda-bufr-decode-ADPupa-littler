@@ -239,6 +239,30 @@ C*-----------------------------------------------------------------------
       END
 
 C*-----------------------------------------------------------------------
+       SUBROUTINE get_lat_lon(clatlon, clatlonh, retval)
+
+C      Get latitude and longitude from either CLAT/CLON or CLATH/CLONH
+c      Input:
+c         clatlon: CLAT or CLON returned by UFBINT
+c         clatlonh: CLATH or CLONH returned by UFBINT
+c      Output:
+c         retval: latitude or longitude value
+
+       real*8 clatlon, clatlonh, retval, dumm
+       dumm=99999.9
+
+       IF (ibfms(clatlon) .EQ. 0) THEN
+          retval = clatlon
+       ELSE IF (ibfms(clatlonh) .EQ. 0) THEN
+          retval = clatlonh
+       ELSE
+          retval = dumm
+       ENDIF
+       
+       RETURN
+       END
+       
+C*-----------------------------------------------------------------------
 
       SUBROUTINE READMval(M1,fl)
            character*8 M1
