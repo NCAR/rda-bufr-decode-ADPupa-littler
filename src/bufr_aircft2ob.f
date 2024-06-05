@@ -262,6 +262,7 @@ c         retval: latitude or longitude value
        ENDIF
        
        RETURN
+       END
 C*-----------------------------------------------------------------------
        SUBROUTINE READMval(M1,fl)
        character*8 M1
