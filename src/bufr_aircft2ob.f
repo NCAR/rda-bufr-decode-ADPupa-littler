@@ -14,7 +14,8 @@ c  BUFR mnemonics
       DATA obstr  /'MIXR REHU TMDB WDIR WSPD                '/
 
       parameter(iu=9,iou=10,lunit=11)
-
+      parameter(dumm=99999.9)
+      
       INTEGER year,month,days,hour
       real lat,lon,pr,tt,td,wdir,wspd
       INTEGER nlevi, nlevn, nlevl, nlevo, nlev
@@ -84,7 +85,6 @@ c     Open output file
 
       iflag=0
       nlev=1
-      dumm=99999.9
 
       isurf=0
       ibogus=0
@@ -180,22 +180,8 @@ c  Prepare output
           CALL READMval(M6,wdir)
           CALL READMval(M7,wspd)
 
-C Get latitude and longitude from either CLAT/CLON or CLATH/CLONH
-            IF (ibfms(locarr(1,z)) .EQ. 0) THEN
-               lat = locarr(1,z)
-            ELSE IF (ibfms(locarr(6,z) .EQ. 0) THEN
-               lat = locarr(6,z)
-            ELSE
-               lat = dumm
-            ENDIF
-
-            IF (ibfms(locarr(2,z)) .EQ. 0) THEN
-               lon = locarr(2,z)
-            ELSE IF (ibfms(locarr(7,z) .EQ. 0) THEN
-               lon = locarr(7,z)
-            ELSE
-               lon = dumm
-            ENDIF
+          CALL get_lat_lon(locarr(1,z), locarr(6,z), lat)
+          CALL get_lat_lon(locarr(2,z), locarr(7,z), lon)
 
           date=M10
           mins=M11
@@ -255,14 +241,36 @@ C*-----------------------------------------------------------------------
       END
 
 C*-----------------------------------------------------------------------
-      SUBROUTINE READMval(M1,fl)
-      character*8 M1
-      dumm=99999.9
-      if(M1(1:1) == 'm' .or. M1(1:1) == '*') then
-        fl = dumm
-      else
-        read(M1,*)fl
-      endif
+       SUBROUTINE get_lat_lon(clatlon, clatlonh, retval)
 
-      RETURN
-      END
+C      Get latitude and longitude from either CLAT/CLON or CLATH/CLONH
+c      Input:
+c         clatlon: CLAT or CLON returned by UFBINT
+c         clatlonh: CLATH or CLONH returned by UFBINT
+c      Output:
+c         retval: latitude or longitude value
+
+       real*8 clatlon, clatlonh, retval, dumm
+       dumm=99999.9
+
+       IF (ibfms(clatlon) .EQ. 0) THEN
+          retval = clatlon
+       ELSE IF (ibfms(clatlonh) .EQ. 0) THEN
+          retval = clatlonh
+       ELSE
+          retval = dumm
+       ENDIF
+       
+       RETURN
+C*-----------------------------------------------------------------------
+       SUBROUTINE READMval(M1,fl)
+       character*8 M1
+       dumm=99999.9
+       if(M1(1:1) == 'm' .or. M1(1:1) == '*') then
+         fl = dumm
+       else
+         read(M1,*)fl
+       endif
+
+       RETURN
+       END
