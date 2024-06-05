@@ -14,6 +14,7 @@ c BUFR mnemonics
       DATA obstr  /'MIXR REHU TMDB WDIR WSPD                '/
 
       PARAMETER (iu=9,iou=10,lunit=11)
+      PARAMETER (dumm=99999.9)
 
       INTEGER year,month,days,hour
       real lat,lon,pr,tt,td,wdir,wspd
@@ -84,7 +85,6 @@ c     Open output file
 
       iflag=0 
       nlev=1
-      dumm=99999.9
 
       isurf=0
       ibogus=0
@@ -185,24 +185,9 @@ c         Prepare output
           CALL READMval(M8,wdir)
           CALL READMval(M9,wspd)
 
-C Get latitude and longitude from either CLAT/CLON or CLATH/CLONH
-            IF (ibfms(locarr(1,z)) .EQ. 0) THEN
-               lat = locarr(1,z)
-            ELSE IF (ibfms(locarr(5,z) .EQ. 0) THEN
-               lat = locarr(5,z)
-            ELSE
-               lat = dumm
-            ENDIF
-
-            IF (ibfms(locarr(2,z)) .EQ. 0) THEN
-               lon = locarr(2,z)
-            ELSE IF (ibfms(locarr(6,z) .EQ. 0) THEN
-               lon = locarr(6,z)
-            ELSE
-               lon = dumm
-            ENDIF
-
-               
+          CALL get_lat_lon(locarr(1,z), locarr(5,z), lat)
+          CALL get_lat_lon(locarr(2,z), locarr(6,z), lon)
+                         
           if(pr.ne.0 .and. pr.ne.99999.9) then
             pr=pr/100
           end if
@@ -250,7 +235,30 @@ C*-----------------------------------------------------------------------
 2000  stop 99999
 
       END
-      
+
+C*-----------------------------------------------------------------------
+       SUBROUTINE get_lat_lon(clatlon, clatlonh, retval)
+
+C      Get latitude and longitude from either CLAT/CLON or CLATH/CLONH
+c      Input:
+c         clatlon: CLAT or CLON returned by UFBINT
+c         clatlonh: CLATH or CLONH returned by UFBINT
+c      Output:
+c         retval: latitude or longitude value
+
+       real*8 clatlon, clatlonh, retval, dumm
+       dumm=99999.9
+
+       IF (ibfms(clatlon) .EQ. 0) THEN
+          retval = clatlon
+       ELSE IF (ibfms(clatlonh) .EQ. 0) THEN
+          retval = clatlonh
+       ELSE
+          retval = dumm
+       ENDIF
+       
+       RETURN
+       END
 C*-----------------------------------------------------------------------
       SUBROUTINE READMval(M1,fl)
       character*8 M1
