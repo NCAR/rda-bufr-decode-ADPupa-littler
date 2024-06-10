@@ -21,7 +21,7 @@ c  BUFR mnemonics
       dimension pr(nz),tt(nz),td(nz)
       integer  xht,nlev,i, iargc, n,minu,k
       real  xu,xv,xy,xm,xh,xmm,xd
-      real  temp,v(nz),zx(nz),d(nz),ter(nz)
+      real  temp,zx(nz),wdir(nz),wspd(nz),ter(nz)
       real  lat(nz), lon(nz)
       real xt,xtd,xtt
       character*80 fin,fout
@@ -35,7 +35,6 @@ c  BUFR mnemonics
 
       real wlon,elon,slat,nlat
 
-      CHARACTER*8 M1,M2,M3,M4,M5
       CHARACTER*10 M10
       CHARACTER*2 M11
       CHARACTER*80 M20
@@ -168,6 +167,9 @@ c  Read data values into arrays
            ENDIF
         ENDDO
 
+        write(M10, '(I10)') idate
+        write(M11, '(A2)') minute
+
 c  Get Table D index for csubset mnemonic, and get the description
         CALL nemtab(lun, csubset, idn, tab, n)
         desc=tabd(n, lun)(16:70)
@@ -179,38 +181,29 @@ c  Prepare output
 c          IF(ibfms(obsarr(3,z)) .eq. 0) THEN
              iflag=iflag+1
              j=iflag
-             write(xpr, '(F8.1)') obsarr(3,z)  ! pr
-             write(M1, '(F6.2)') obsarr(1,z)  ! tt
-             write(M2, '(F6.2)') obsarr(2,z)  ! td
-             write(M3, '(F5.1)') obsarr(4,z)  ! wdir
-             write(M4, '(F6.2)') obsarr(5,z)  ! wspd
-             write(M5, '(F6.2)') locarr(3,z)  ! ter (SELV)
-             write(M10, '(I10)') idate
-             write(M11, '(A2)') minute
 
+             CALL get_val(obsarr(1,z), tt(j))
+             CALL get_val(obsarr(2,z), td(j))
+             CALL get_val(obsarr(3,z), pr(j))
+             CALL get_val(obsarr(4,z), wdir(j))
+             CALL get_val(obsarr(5,z), wspd(j))
+             CALL get_val(locarr(3,z), ter(j))
+             CALL get_lat_lon(locarr(1,z), locarr(4,z), lat(j))
+             CALL get_lat_lon(locarr(2,z), locarr(5,z), lon(j))
+
+             date(j)=M10
+             mins(j)=M11
              if(ibfms(idarr2(3,1)) .ne. 0) then
                 write(M20, '(A)') 'RPID: MISSING'
              else
                 write(M20, '(A,1X,A)') 'RPID:',idarr2(3,1)
              endif
-
-             CALL READMval(M1,tt(j))
-             CALL READMval(M2,td(j))
-             CALL READMval(M3,d(j))
-             CALL READMval(M4,v(j))
-             CALL READMval(M5,ter(j))
-             CALL READMval(xpr,pr(j))
-
-             CALL get_lat_lon(locarr(1,z), locarr(4,z), lat(j))
-             CALL get_lat_lon(locarr(2,z), locarr(5,z), lon(j))
+             staid(j)=M20
         
              if(pr(j).ne.0 .and. pr(j).ne.99999.9) then
                 pr(j)= pr(j)/100
              end if
 
-             date(j)=M10
-             mins(j)=M11
-             staid(j)=M20
              write(adpupaname(j), '(A40)') desc(15:)
 
 c         ENDIF 
@@ -236,7 +229,7 @@ c  write output
                alat1=lat(k)
                alon1=lon(k)
                if(iflag1.ne.0) then
-                  CALL SORTWRITE(pr,zx,tt,td,d,v,l,l1,m)
+                  CALL SORTWRITE(pr,zx,tt,td,wdir,wspd,l,l1,m)
                   write(iou,111) iupper,
      +                           dname,
      +                           staid(l),
@@ -251,7 +244,8 @@ c  write output
      +                           m-l+1,
      +                           ibogus
                   do i=l,m
-                    write(iou,112) pr(i),zx(i),tt(i),td(i),d(i),v(i)
+                    write(iou,112) pr(i),zx(i),tt(i),
+     +                             td(i),wdir(i),wspd(i)
                   enddo
 !                 write(*,*)l,' ',m,' ',l1
                   iflag2=1
@@ -268,7 +262,7 @@ c  write output
 111     format(i1,1x,a6,3(1x,a40),1x,a10,a2,4(f7.1,1x),i5,1x,i1)
 112     format(6(f7.1,1x))
       
-        CALL SORTWRITE(pr,zx,tt,td,d,v,l,l1,m)
+        CALL SORTWRITE(pr,zx,tt,td,wdir,wspd,l,l1,m)
         write(iou,111) iupper,
      +                 dname,
      +                 staid(l),
@@ -283,7 +277,7 @@ c  write output
      +                 m-l+1,
      +                 ibogus
         do i=l,m
-          write(iou,112)pr(i),zx(i),tt(i),td(i),d(i),v(i)
+          write(iou,112)pr(i),zx(i),tt(i),td(i),wdir(i),wspd(i)
         enddo
 
         close(iou)
@@ -291,10 +285,33 @@ c  write output
 
 C*-----------------------------------------------------------------------
 !       write(*,*)'nlev ', nlev
-2000  stop 99999
+
+2000  continue
 
       END
 
+C*-----------------------------------------------------------------------
+       SUBROUTINE get_val(mval, retval)
+
+C      Checks variable value returned by UFBINT and returns either the 
+c      observation value or missing.
+c
+c      Input:
+c         mval: BUFR parameter value returned by UFBINT
+c      Output:
+c         retval: observation value
+
+       real*8 mval, retval, dumm
+       dumm=99999.9
+
+       IF (ibfms(mval) .EQ. 0) THEN
+          retval = mval
+       ELSE
+          retval = dumm
+       ENDIF
+       
+       RETURN
+       END
 C*-----------------------------------------------------------------------
        SUBROUTINE get_lat_lon(clatlon, clatlonh, retval)
 
@@ -319,19 +336,6 @@ c         retval: latitude or longitude value
        RETURN
        END
        
-C*-----------------------------------------------------------------------
-      SUBROUTINE READMval(M1,fl)
-      character*8 M1 
-      dumm=99999.9
-      if(M1(1:1) ==  'm' .or. M1(1:1) == '*') then
-         fl = dumm
-      else
-         read(M1,*)fl
-      endif
-
-      RETURN
-      END
-
 C*-----------------------------------------------------------------------
       SUBROUTINE SORTWRITE(pr,zx,tt,td,d,v,l,k,m)
       parameter(nz=9999999)

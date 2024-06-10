@@ -161,6 +161,11 @@ C* Read data values into arrays
            ENDIF
         ENDDO 
 
+          write(M10, '(I10)') idate
+          write(M11, '(A2)') minute
+          date=M10
+          mins=M11
+
 c  Get Table D index for csubset mnemonic, and get the description
         CALL nemtab(lun, csubset, idn, tab, n)
         desc=tabd(n, lun)(16:70)
@@ -170,21 +175,13 @@ C*-----------------------------------------------------------------------
 c         Prepare output
 
         DO z = 1, nlev
-
-          write(M3, '(F8.1)') locarr(3,z)  ! pr
-          write(M4, '(F8.1)') locarr(4,z)  ! ialt
-          write(M5, '(F4.1)') obsarr(1,z)  ! mixr
-          write(M6, '(F4.1)') obsarr(2,z)  ! rehu
-          write(M7, '(F6.2)') obsarr(3,z)  ! tt
-          write(M8, '(F5.1)') obsarr(4,z)  ! wdir
-          write(M9, '(F6.2)') obsarr(5,z)  ! wspd
-          write(M10, '(I10)') idate
-          write(M11, '(A2)') minute
-          CALL READMval(M3,pr)
-          CALL READMval(M7,tt)
-          CALL READMval(M8,wdir)
-          CALL READMval(M9,wspd)
-
+          CALL get_val(locarr(3,z), pr)
+          CALL get_val(locarr(4,z), ialt)
+          CALL get_val(obsarr(1,z), mixr)
+          CALL get_val(obsarr(2,z), rehu)
+          CALL get_val(obsarr(3,z), tt)
+          CALL get_val(obsarr(4,z), wdir)
+          CALL get_val(obsarr(5,z), wspd)
           CALL get_lat_lon(locarr(1,z), locarr(5,z), lat)
           CALL get_lat_lon(locarr(2,z), locarr(6,z), lon)
                          
@@ -192,14 +189,11 @@ c         Prepare output
             pr=pr/100
           end if
 
-          date=M10
-          mins=M11
-
-             if(ibfms(idarr(1,1)) .ne. 0) then
-                write(aircarid, '(A40)') 'ACID: MISSING'
-             else
-                write(aircarid, '(A,1X,A20)') 'ACID:',idarr(1,1)
-             endif
+          if(ibfms(idarr(1,1)) .ne. 0) then
+              write(aircarid, '(A40)') 'ACID: MISSING'
+          else
+              write(aircarid, '(A,1X,A20)') 'ACID:',idarr(1,1)
+          endif
           
 c------------------------------------------------------------------------
 c         Write output 
@@ -232,10 +226,32 @@ c         Write output
 
 C*-----------------------------------------------------------------------
 
-2000  stop 99999
+2000  continue
 
       END
 
+C*-----------------------------------------------------------------------
+       SUBROUTINE get_val(mval, retval)
+
+C      Checks variable value returned by UFBINT and returns either the 
+c      observation value or missing.
+c
+c      Input:
+c         mval: BUFR parameter value returned by UFBINT
+c      Output:
+c         retval: observation value
+
+       real*8 mval, retval, dumm
+       dumm=99999.9
+
+       IF (ibfms(mval) .EQ. 0) THEN
+          retval = mval
+       ELSE
+          retval = dumm
+       ENDIF
+       
+       RETURN
+       END
 C*-----------------------------------------------------------------------
        SUBROUTINE get_lat_lon(clatlon, clatlonh, retval)
 
@@ -259,15 +275,3 @@ c         retval: latitude or longitude value
        
        RETURN
        END
-C*-----------------------------------------------------------------------
-      SUBROUTINE READMval(M1,fl)
-      character*8 M1
-      dumm=99999.9
-      if(M1(1:1)=='m' .or. M1(1:1)=='*') then
-        fl = dumm
-      else
-        read(M1,*)fl
-      endif
-      
-      RETURN
-      END
