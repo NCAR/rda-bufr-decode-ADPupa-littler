@@ -166,7 +166,7 @@ c  Prepare output
 
         DO z = 1,nlev
           CALL get_val(locarr(3,z), pr)
-          CALL get_val(locar(4,z), zx1)
+          CALL get_val(locarr(4,z), zx1)
           CALL get_val(locarr(5,z), zx2)
           CALL get_val(obsarr(3,z), tt)
           CALL get_val(obsarr(4,z), wdir)
