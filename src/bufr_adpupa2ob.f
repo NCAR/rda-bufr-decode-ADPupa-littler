@@ -104,8 +104,8 @@ c  Open output file
         zx(k)=dumm
         tt(k)=dumm
         td(k)=dumm
-        d(k)=dumm
-        v(k)=dumm
+        wdir(k)=dumm
+        wspd(k)=dumm
       enddo
 
 C* Connect BUFR file to the BUFRLIB software for input operations.
