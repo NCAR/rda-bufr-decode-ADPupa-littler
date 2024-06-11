@@ -165,12 +165,12 @@ C*-----------------------------------------------------------------------
 c  Prepare output
 
         DO z = 1,nlev
-          CALL get_val(locarr(3,z), pr)
-          CALL get_val(locarr(4,z), zx1)
-          CALL get_val(locarr(5,z), zx2)
-          CALL get_val(obsarr(3,z), tt)
-          CALL get_val(obsarr(4,z), wdir)
-          CALL get_val(obsarr(5,z), wspd)
+          CALL get_val(locarr(3,z), '(F8.1)', pr)
+          CALL get_val(locarr(4,z), '(F8.1)', zx1)
+          CALL get_val(locarr(5,z), '(F8.1)', zx2)
+          CALL get_val(obsarr(3,z), '(F6.2)', tt)
+          CALL get_val(obsarr(4,z), '(F5.1)', wdir)
+          CALL get_val(obsarr(5,z), '(F6.2)', wspd)
           CALL get_lat_lon(locarr(1,z), locarr(6,z), lat)
           CALL get_lat_lon(locarr(2,z), locarr(7,z), lon)
 
@@ -182,15 +182,15 @@ c  Prepare output
             zx=zx2
           end if
 
-             if(ibfms(idarr(1,z)) .eq. 0) then
-                write(aircftid, '(A,1X,A)') 'ACID:',idarr(1,z)
-             else if (ibfms(idarr(2,z)) .eq. 0) then
-                write(aircftid, '(A,1X,A)') 'ACRN:',idarr(2,z)
-             else if (ibfms(idarr(4,z)) .eq. 0) then
-                write(aircftid, '(A,1X,A)') 'RPID:',idarr(4,z)
-             else
-                write(aircftid, '(A40)') 'ACID: MISSING'
-             endif
+          if(ibfms(idarr(1,z)) .eq. 0) then
+            write(aircftid, '(A,1X,A)') 'ACID:',idarr(1,z)
+          else if (ibfms(idarr(2,z)) .eq. 0) then
+            write(aircftid, '(A,1X,A)') 'ACRN:',idarr(2,z)
+          else if (ibfms(idarr(4,z)) .eq. 0) then
+            write(aircftid, '(A,1X,A)') 'RPID:',idarr(4,z)
+          else
+            write(aircftid, '(A40)') 'ACID: MISSING'
+          endif
 
 c------------------------------------------------------------------------
 c         Write output 
@@ -229,13 +229,14 @@ C*-----------------------------------------------------------------------
       END
 
 C*-----------------------------------------------------------------------
-       SUBROUTINE get_val(mval, retval)
+       SUBROUTINE get_val(mval, fmt, retval)
 
 C      Checks variable value returned by UFBINT and returns either the 
 c      observation value or missing.
 c
 c      Input:
 c         mval: BUFR parameter value returned by UFBINT
+c         fmt:  parameter format
 c      Output:
 c         retval: observation value
 
@@ -243,7 +244,7 @@ c         retval: observation value
        dumm=99999.9
 
        IF (ibfms(mval) .EQ. 0) THEN
-          retval = mval
+          write(retval, fmt) = mval
        ELSE
           retval = dumm
        ENDIF
