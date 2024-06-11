@@ -264,14 +264,14 @@ c      Output:
 c         retval: latitude or longitude value
 
        real*8 clatlon, clatlonh, retval
-       parameter(dumm=99999.9)
+       parameter(missing=99999.9)
 
        IF (ibfms(clatlon) .EQ. 0) THEN
-          read(clatlon, *) retval
+          retval = clatlon
        ELSE IF (ibfms(clatlonh) .EQ. 0) THEN
-          read(clatlonh, *) retval
+          retval = clatlonh
        ELSE
-          retval = dumm
+          retval = missing
        ENDIF
        
        RETURN
