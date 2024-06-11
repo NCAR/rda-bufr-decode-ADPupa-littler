@@ -241,6 +241,8 @@ c      Output:
 c         retval: observation value
 
        real*8 mval, retval, dumm
+       character*6 fmt
+
        dumm=99999.9
 
        IF (ibfms(mval) .EQ. 0) THEN
