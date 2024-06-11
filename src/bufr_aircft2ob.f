@@ -240,14 +240,13 @@ c         fmt:  parameter format
 c      Output:
 c         retval: observation value
 
-       real*8 mval, dumm
+       real*8 mval
        character*6 fmt
        character retval
-
-       dumm=99999.9
+       parameter(dumm=99999.9)
 
        IF (ibfms(mval) .EQ. 0) THEN
-          write(retval, fmt) = mval
+          write(retval, fmt) mval
        ELSE
           retval = dumm
        ENDIF
