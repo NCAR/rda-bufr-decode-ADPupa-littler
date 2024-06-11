@@ -17,7 +17,8 @@ c  BUFR mnemonics
       parameter(dumm=99999.9)
       
       INTEGER year,month,days,hour
-      real lat,lon,pr,tt,td,wdir,wspd
+      REAL lat,lon,pr,tt,td,wdir,wspd
+      REAL zx1, zx2, zx
       INTEGER nlevi, nlevn, nlevl, nlevo, nlev
       INTEGER irec, isub
       REAL ter
@@ -165,12 +166,12 @@ C*-----------------------------------------------------------------------
 c  Prepare output
 
         DO z = 1,nlev
-          CALL get_val(locarr(3,z), '(F8.1)', pr)
-          CALL get_val(locarr(4,z), '(F8.1)', zx1)
-          CALL get_val(locarr(5,z), '(F8.1)', zx2)
-          CALL get_val(obsarr(3,z), '(F6.2)', tt)
-          CALL get_val(obsarr(4,z), '(F5.1)', wdir)
-          CALL get_val(obsarr(5,z), '(F6.2)', wspd)
+          CALL get_val(locarr(3,z), pr)
+          CALL get_val(locarr(4,z), zx1)
+          CALL get_val(locarr(5,z), zx2)
+          CALL get_val(obsarr(3,z), tt)
+          CALL get_val(obsarr(4,z), wdir)
+          CALL get_val(obsarr(5,z), wspd)
           CALL get_lat_lon(locarr(1,z), locarr(6,z), lat)
           CALL get_lat_lon(locarr(2,z), locarr(7,z), lon)
 
@@ -229,26 +230,23 @@ C*-----------------------------------------------------------------------
       END
 
 C*-----------------------------------------------------------------------
-       SUBROUTINE get_val(mval, fmt, retval)
+       SUBROUTINE get_val(mval, retval)
 
 C      Checks variable value returned by UFBINT and returns either the 
 c      observation value or missing.
 c
 c      Input:
 c         mval: BUFR parameter value returned by UFBINT
-c         fmt:  parameter format
 c      Output:
 c         retval: observation value
 
-       real*8 mval
-       character*6 fmt
-       character retval
+       real*8 mval, retval
        parameter(dumm=99999.9)
 
        IF (ibfms(mval) .EQ. 0) THEN
-          write(retval, fmt) mval
+          retval = mval
        ELSE
-          write(retval, '(F7.1)') dumm
+          retval = dumm
        ENDIF
        
        RETURN
