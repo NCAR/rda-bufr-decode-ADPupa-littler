@@ -153,7 +153,8 @@ c subroutine to read data from file unit
       read(iunit,113,end=1000) 
      +     isurf, dname, staid, staname, source,
      +     mdate, xlat, xlon, xter, xslp, nlev, ibogus
-113   format(i1,1x,a6,3(1x,a40),1x,a12,4(f7.1,1x),i3,1x,i1)
+113   format(i1,1x,a6,1x,3(a40,1x),a12,1x,
+     +       3(f20.5,1x),f13.5,1x,i10,1x,i1)
 
       if (xter .ne. dmiss) ter = xter
       if (xslp .ne. dmiss) slp = xslp*100.
@@ -175,7 +176,7 @@ c subroutine to read data from file unit
 	  iflag = 1
 	  goto 2000
 
-114   format(6(f7.1,1x))
+114   format(6(f13.5,1x))
 1000  iflag = 0
 
 2000  return

@@ -4,17 +4,20 @@
       PARAMETER (MXLV = 255)
 
       REAL*8  idarr(MXMN, MXLV), instarr(MXMN, MXLV),
-     +        locarr(MXMN, MXLV), obsarr(MXMN, MXLV) 
+     +        locarr(MXMN, MXLV), locarr2(MXMN, MXLV), 
+     +        obsarr(MXMN, MXLV) 
 
-      CHARACTER*40 idstr,instr,lstr,obstr
+      CHARACTER*40 idstr,instr,lstr,lstr2,obstr
 
 c BUFR mnemonics
       DATA idstr/'SAID RPID                               '/ 
       DATA instr/'SIID SCLF SIDP SWCM                     '/
-      DATA lstr /'YEAR MNTH DAYS HOUR MINU CLAT CLON      '/
+      DATA lstr /'YEAR MNTH DAYS HOUR MINU                '/
+      DATA lstr2/'CLAT CLON CLATH CLONH                   '/
       DATA obstr/'TMDBST PRLC WDIR WSPD                   '/
 
       PARAMETER (iu=9, iou=10, lunit=11)
+      PARAMETER (dumm=99999.9)
 
       INTEGER year,month,days,hour
       real lat,lon,pr,tt,td,wdir,wspd
@@ -27,9 +30,8 @@ c BUFR mnemonics
       character*30 fin, fout
       character*10  date_tag, date
       character*6 dname
-      character argv*300, minute*2, M11*2, mins*2
+      character argv*300, minute*2, mins*2
       character*12 ilev
-      character*12 M1,M2,M3,M4,M5,M6,M10
       real wlon, elon, slat, nlat
 
       CHARACTER  csubset*8, inf*200, outstg*200
@@ -90,14 +92,15 @@ C*    Open output file
 
       iflag=0
       nlev=1
-      dumm=99999.9
 
       isurf = 0
       ibogus = 0
       ter = dumm
       dslp = dumm
       date='MMMMMMMMMM'
-      mins='MM' 
+      mins='MM'
+      lat=dumm
+      lon=dumm
       pr=dumm
       zx=dumm
       tt=dumm
@@ -111,9 +114,6 @@ C*    the BUFR file itself, thus the logical unit for the BUFR tables
 C*    file is the same as the BUFR file itself.
       CALL OPENBF(lunit, 'IN', lunit)
 
-c     Get file ID (lun) associated with the BUFR file
-      CALL status(lunit, lun, il, im)
-
 c     Include code and flag table information from master BUFR tables
       CALL codflg('Y')
 
@@ -125,6 +125,9 @@ C*-----------------------------------------------------------------------
 C*    Loop through BUFR subsets
 
       DO WHILE(.true.)
+
+c       Get file ID (lun) associated with the BUFR file
+        CALL status(lunit, lun, il, im)
 
         CALL READNS(lunit, csubset, idate, ierr)
         CALL UFBCNT(lunit, irec, isub)
@@ -141,6 +144,7 @@ c     +           csubset,irec,isub,idate
 C*      Read data values into arrays
         CALL UFBINT(lunit, idarr, MXMN, MXLV, nlevi, idstr)
         CALL UFBINT(lunit, locarr, MXMN, MXLV, nlevl, lstr)
+        CALL UFBINT(lunit, locarr2, MXMN, MXLV, nlevl, lstr2)
         CALL UFBINT(lunit, obsarr, MXMN, MXLV, nlevo, obstr)
 
         if(nlevi .ne. nlevl .or. nlevi .ne. nlevo) then
@@ -149,19 +153,15 @@ C*      Read data values into arrays
            nlev=nlevi
         endif
 
+        write(date, '(I10)') idate
+
         if (ibfms(locarr(5,1)) .eq. 1) then
            minu=0
-           minute='00'
+           mins='00'
         else
            minu=int(locarr(5,1))
-           write (unit=minute, FMT='(I2)') minu
+           write (mins, FMT='(I2)') minu
         endif
-
-        DO k=1,2
-          IF (minute (k:k) .eq. ' ' .or. minute(k:k) .eq. '*') THEN
-            minute (k:k) = '0'
-          ENDIF
-        ENDDO
 
 c       Get Table D index for csubset mnemonic, and get the 
 c       description
@@ -173,24 +173,12 @@ C*-----------------------------------------------------------------------
 c       Prepare output
 
         DO z = 1, nlev
-          write(M1, '(F7.2)') locarr(6,z)  ! lat
-          write(M2, '(F7.2)') locarr(7,z)  ! lon
-          write(M3, '(F6.2)') obsarr(1,z)  ! tt
-          write(M4, '(F7.1)') obsarr(2,z)  ! pr
-          write(M5, '(F5.1)') obsarr(3,z)  ! wdir
-          write(M6, '(F6.2)') obsarr(4,z)  ! wspd
-          write(M10, '(I10)') idate
-          write(M11, '(A2)') minute
-
-          CALL READMval(M1,lat)
-          CALL READMval(M2,lon)
-          CALL READMval(M3,tt)
-          CALL READMval(M4,pr)
-          CALL READMval(M5,wdir)
-          CALL READMval(M6,wspd)
-
-          date=M10
-          mins=M11
+          CALL get_val(obsarr(1,z), tt)
+          CALL get_val(obsarr(2,z), pr)
+          CALL get_val(obsarr(3,z), wdir)
+          CALL get_val(obsarr(4,z), wspd)
+          CALL get_lat_lon(locarr2(1,z), locarr2(3,z), lat)
+          CALL get_lat_lon(locarr2(2,z), locarr2(4,z), lon)
 
           if(pr.ne.0 .and. pr<99999 ) then
              pr=pr/100
@@ -225,28 +213,63 @@ c       Write to output file
      +                         ibogus
                write(iou,112) pr,zx,tt,td,wdir,wspd
           endif
-111       format(i1,1x,a6,3(1x,a40),1x,a10,a2,4(f7.1,1x),i3,1x,i1)
-112       format(6(f7.1,1x))
+111       format(i1,1x,a6,1x,3(a40,1x),a10,a2,1x,
+     +           3(f20.5,1x),f13.5,1x,i10,1x,i1)
+112       format(6(f13.5,1x))
 
         END DO
       END DO
 
 C*-----------------------------------------------------------------------
 
-2000  stop 99999     
+2000  continue 
 
       END
 
 C*-----------------------------------------------------------------------
+       SUBROUTINE get_val(mval, retval)
 
-      SUBROUTINE READMval(M1,fl)
-           character*8 M1
-           dumm=99999.9
-           if(M1(1:1) ==  'm' .or. M1(1:1) == '*') then
-               fl = dumm
-           else
-               read(M1,*)fl
-           endif 
+C      Checks variable value returned by UFBINT and returns either the 
+c      observation value or missing.
+c
+c      Input:
+c         mval: BUFR parameter value returned by UFBINT
+c      Output:
+c         retval: observation value
 
+       real*8 mval
+       real retval
+       parameter(missing=99999.9)
+
+       IF (ibfms(mval) .EQ. 0) THEN
+          retval = mval
+       ELSE
+          retval = missing
+       ENDIF
+       
        RETURN
-         END
+       END
+C*-----------------------------------------------------------------------
+       SUBROUTINE get_lat_lon(clatlon, clatlonh, retval)
+
+C      Get latitude and longitude from either CLAT/CLON or CLATH/CLONH
+c      Input:
+c         clatlon: CLAT or CLON returned by UFBINT
+c         clatlonh: CLATH or CLONH returned by UFBINT
+c      Output:
+c         retval: latitude or longitude value
+
+       real*8 clatlon, clatlonh
+       real retval
+       parameter(missing=99999.9)
+
+       IF (ibfms(clatlon) .EQ. 0) THEN
+          retval = clatlon
+       ELSE IF (ibfms(clatlonh) .EQ. 0) THEN
+          retval = clatlonh
+       ELSE
+          retval = missing
+       ENDIF
+       
+       RETURN
+       END

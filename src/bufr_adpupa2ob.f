@@ -12,14 +12,16 @@ c  BUFR mnemonics
       DATA idstr  /'WMOB WMOS WMOR STSN SSTN BPID ACID      '/
       DATA idstr2 /'RSERL RSML RPID                         '/
       DATA nlocstr/'YEAR MNTH DAYS HOUR MINU                '/
-      DATA locstr /'CLAT CLON SELV                          '/
+      DATA locstr /'CLAT CLON SELV CLATH CLONH              '/
       DATA obstr  /'TMDB TMDP PRLC WDIR WSPD                '/
 
       parameter(iu=9,iou=10,lunit=11,nz=9999999)
+      parameter(dumm=99999.9)
+      
       dimension pr(nz),tt(nz),td(nz)
       integer  xht,nlev,i, iargc, n,minu,k
       real  xu,xv,xy,xm,xh,xmm,xd
-      real  temp,v(nz),zx(nz),d(nz),ter(nz)
+      real  temp,zx(nz),wdir(nz),wspd(nz),ter(nz)
       real  lat(nz), lon(nz)
       real xt,xtd,xtt
       character*80 fin,fout
@@ -33,7 +35,6 @@ c  BUFR mnemonics
 
       real wlon,elon,slat,nlat
 
-      CHARACTER*8 M1,M2,M3,M4,M5
       CHARACTER*10 M10
       CHARACTER*2 M11
       CHARACTER*80 M20
@@ -90,7 +91,6 @@ c  Open output file
       open(iou, file=fout, status='unknown', form='formatted')
 
       iflag = 0
-      dumm=99999.9
 
       iupper=0
       ibogus=0
@@ -99,13 +99,15 @@ c  Open output file
         date(k)='MMMMMMMMMM'
         mins(k)='MM'
         staid(k)='MMMMMM'
+        lat(k)=dumm
+        lon(k)=dumm
         ter(k)=dumm
         pr(k)=dumm
         zx(k)=dumm
         tt(k)=dumm
         td(k)=dumm
-        d(k)=dumm
-        v(k)=dumm
+        wdir(k)=dumm
+        wspd(k)=dumm
       enddo
 
 C* Connect BUFR file to the BUFRLIB software for input operations.
@@ -114,9 +116,6 @@ C* Connect BUFR file to the BUFRLIB software for input operations.
 
 C* Specify that we would like IDATE values returned using 10 digits
 C*      (i.e. YYYYMMDDHH ).
-
-c  Get file ID (lun) associated with the BUFR file
-      CALL status(lunit, lun, il, im)
 
 c  Include code and flag table information from master BUFR tables
       CALL codflg('Y')
@@ -130,6 +129,9 @@ C*-----------------------------------------------------------------------
 c  Loop through BUFR subsets
 
       DO WHILE ( .true. )
+
+c       Get file ID (lun) associated with the BUFR file
+        CALL status(lunit, lun, il, im)
 
         CALL READNS(lunit, csubset, idate, ierr)
         call ufbcnt(lunit, irec, isub)
@@ -167,6 +169,9 @@ c  Read data values into arrays
            ENDIF
         ENDDO
 
+        write(M10, '(I10)') idate
+        write(M11, '(A2)') minute
+
 c  Get Table D index for csubset mnemonic, and get the description
         CALL nemtab(lun, csubset, idn, tab, n)
         desc=tabd(n, lun)(16:70)
@@ -179,39 +184,28 @@ c          IF(ibfms(obsarr(3,z)) .eq. 0) THEN
              iflag=iflag+1
              j=iflag
 
-             write(xlat, '(F7.2)') locarr(1,z)  ! lat (CLAT)
-             write(xlon, '(F7.2)') locarr(2,z)  ! lon (CLON)
-             write(xpr, '(F8.1)') obsarr(3,z)  ! pr
-             write(M1, '(F6.2)') obsarr(1,z)  ! tt
-             write(M2, '(F6.2)') obsarr(2,z)  ! td
-             write(M3, '(F5.1)') obsarr(4,z)  ! wdir
-             write(M4, '(F6.2)') obsarr(5,z)  ! wspd
-             write(M5, '(F6.2)') locarr(3,z)  ! ter (SELV)
-             write(M10, '(I10)') idate
-             write(M11, '(A2)') minute
+             CALL get_val(obsarr(1,z), tt(j))
+             CALL get_val(obsarr(2,z), td(j))
+             CALL get_val(obsarr(3,z), pr(j))
+             CALL get_val(obsarr(4,z), wdir(j))
+             CALL get_val(obsarr(5,z), wspd(j))
+             CALL get_val(locarr(3,z), ter(j))
+             CALL get_lat_lon(locarr(1,z), locarr(4,z), lat(j))
+             CALL get_lat_lon(locarr(2,z), locarr(5,z), lon(j))
 
+             date(j)=M10
+             mins(j)=M11
              if(ibfms(idarr2(3,1)) .ne. 0) then
                 write(M20, '(A)') 'RPID: MISSING'
              else
                 write(M20, '(A,1X,A)') 'RPID:',idarr2(3,1)
              endif
-
-             CALL READMval(M1,tt(j))
-             CALL READMval(M2,td(j))
-             CALL READMval(M3,d(j))
-             CALL READMval(M4,v(j))
-             CALL READMval(M5,ter(j))
-             CALL READMval(xlat,lat(j))
-             CALL READMval(xlon,lon(j))
-             CALL READMval(xpr,pr(j))
+             staid(j)=M20
         
              if(pr(j).ne.0 .and. pr(j).ne.99999.9) then
                 pr(j)= pr(j)/100
              end if
 
-             date(j)=M10
-             mins(j)=M11
-             staid(j)=M20
              write(adpupaname(j), '(A40)') desc(15:)
 
 c         ENDIF 
@@ -237,7 +231,7 @@ c  write output
                alat1=lat(k)
                alon1=lon(k)
                if(iflag1.ne.0) then
-                  CALL SORTWRITE(pr,zx,tt,td,d,v,l,l1,m)
+                  CALL SORTWRITE(pr,zx,tt,td,wdir,wspd,l,l1,m)
                   write(iou,111) iupper,
      +                           dname,
      +                           staid(l),
@@ -252,7 +246,8 @@ c  write output
      +                           m-l+1,
      +                           ibogus
                   do i=l,m
-                    write(iou,112) pr(i),zx(i),tt(i),td(i),d(i),v(i)
+                    write(iou,112) pr(i),zx(i),tt(i),
+     +                             td(i),wdir(i),wspd(i)
                   enddo
 !                 write(*,*)l,' ',m,' ',l1
                   iflag2=1
@@ -266,10 +261,11 @@ c  write output
           endif
         enddo
 
-111     format(i1,1x,a6,3(1x,a40),1x,a10,a2,4(f7.1,1x),i3,1x,i1)
-112     format(6(f7.1,1x))
+111       format(i1,1x,a6,1x,3(a40,1x),a10,a2,1x,
+     +           3(f20.5,1x),f13.5,1x,i10,1x,i1)
+112       format(6(f13.5,1x))
       
-        CALL SORTWRITE(pr,zx,tt,td,d,v,l,l1,m)
+        CALL SORTWRITE(pr,zx,tt,td,wdir,wspd,l,l1,m)
         write(iou,111) iupper,
      +                 dname,
      +                 staid(l),
@@ -284,7 +280,7 @@ c  write output
      +                 m-l+1,
      +                 ibogus
         do i=l,m
-          write(iou,112)pr(i),zx(i),tt(i),td(i),d(i),v(i)
+          write(iou,112)pr(i),zx(i),tt(i),td(i),wdir(i),wspd(i)
         enddo
 
         close(iou)
@@ -292,23 +288,59 @@ c  write output
 
 C*-----------------------------------------------------------------------
 !       write(*,*)'nlev ', nlev
-2000  stop 99999
+
+2000  continue
 
       END
 
 C*-----------------------------------------------------------------------
-      SUBROUTINE READMval(M1,fl)
-      character*8 M1 
-      dumm=99999.9
-      if(M1(1:1) ==  'm' .or. M1(1:1) == '*') then
-         fl = dumm
-      else
-         read(M1,*)fl
-      endif
+       SUBROUTINE get_val(mval, retval)
 
-      RETURN
-      END
+C      Checks variable value returned by UFBINT and returns either the 
+c      observation value or missing.
+c
+c      Input:
+c         mval: BUFR parameter value returned by UFBINT
+c      Output:
+c         retval: observation value
 
+       real*8 mval
+       real retval
+       parameter(missing=99999.9)
+
+       IF (ibfms(mval) .EQ. 0) THEN
+          retval = mval
+       ELSE
+          retval = missing
+       ENDIF
+       
+       RETURN
+       END
+C*-----------------------------------------------------------------------
+       SUBROUTINE get_lat_lon(clatlon, clatlonh, retval)
+
+C      Get latitude and longitude from either CLAT/CLON or CLATH/CLONH
+c      Input:
+c         clatlon: CLAT or CLON returned by UFBINT
+c         clatlonh: CLATH or CLONH returned by UFBINT
+c      Output:
+c         retval: latitude or longitude value
+
+       real*8 clatlon, clatlonh
+       real retval
+       parameter(missing=99999.9)
+
+       IF (ibfms(clatlon) .EQ. 0) THEN
+          retval = clatlon
+       ELSE IF (ibfms(clatlonh) .EQ. 0) THEN
+          retval = clatlonh
+       ELSE
+          retval = missing
+       ENDIF
+       
+       RETURN
+       END
+       
 C*-----------------------------------------------------------------------
       SUBROUTINE SORTWRITE(pr,zx,tt,td,d,v,l,k,m)
       parameter(nz=9999999)

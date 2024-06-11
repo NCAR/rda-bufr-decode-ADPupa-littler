@@ -10,19 +10,19 @@ c  BUFR mnemonics
       CHARACTER*40 idstr, nlocstr, locstr, obstr
       DATA idstr  /'ACID ACRN ARST RPID                     '/
       DATA nlocstr/'YEAR MNTH DAYS HOUR MINU                '/
-      DATA locstr /'CLATH CLONH PRLC FLVL PSAL CLAT CLON    '/
+      DATA locstr /'CLAT CLON PRLC FLVL PSAL CLATH CLONH    '/
       DATA obstr  /'MIXR REHU TMDB WDIR WSPD                '/
 
       parameter(iu=9,iou=10,lunit=11)
-
+      parameter(dumm=99999.9)
+      
       INTEGER year,month,days,hour
-      real lat,lon,pr,tt,td,wdir,wspd
+      REAL lat,lon,pr,tt,td,wdir,wspd
+      REAL zx1, zx2, zx
       INTEGER nlevi, nlevn, nlevl, nlevo, nlev
       INTEGER irec, isub
       REAL ter
-
-      CHARACTER*12 M1,M2,M3,M4,M5,M6,M7,M8,M9,M10
-      CHARACTER*2 M11, minute, mins
+      CHARACTER*2 minute, mins
 
       integer iargc, n, minu, k
       character*20 fin,fout
@@ -84,7 +84,6 @@ c     Open output file
 
       iflag=0
       nlev=1
-      dumm=99999.9
 
       isurf=0
       ibogus=0
@@ -92,6 +91,8 @@ c     Open output file
       dslp=dumm
       date='MMMMMMMMMM'
       mins='MM'
+      lat=dumm
+      lon=dumm
       pr=dumm
       zx=dumm
       tt=dumm
@@ -106,9 +107,6 @@ C* Connect BUFR file to the BUFRLIB software for input operations.
 C* Specify that we would like IDATE values returned using 10 digits
 C*      (i.e. YYYYMMDDHH ).
 
-c  Get file ID (lun) associated with the BUFR file
-      CALL status(lunit, lun, il, im)
-
 c  Include code and flag table information from master BUFR tables
       CALL codflg('Y')
 
@@ -119,6 +117,9 @@ C*-----------------------------------------------------------------------
 c  Loop through BUFR subsets
 
       DO WHILE (.true.)
+
+c       Get file ID (lun) associated with the BUFR file
+        CALL status(lunit, lun, il, im)
 
         CALL READNS(lunit, csubset, idate, ierr)
         call ufbcnt(lunit, irec, isub)
@@ -146,7 +147,7 @@ c  Read data values into arrays
            minute='00'
         else
            minu=int(nlocarr(5,1))
-           write (unit=minute, FMT='(I2)') minu
+           write (minute, FMT='(I2)') minu
         endif
 
         DO k=1,2
@@ -154,6 +155,9 @@ c  Read data values into arrays
             minute (k:k) = '0'
           ENDIF
         ENDDO
+
+        write(date, '(I10)') idate
+        write(mins, '(A2)') minute
 
 c  Get Table D index for csubset mnemonic, and get the description
         CALL nemtab(lun, csubset, idn, tab, n)
@@ -164,28 +168,14 @@ C*-----------------------------------------------------------------------
 c  Prepare output
 
         DO z = 1,nlev
-
-          write(M1, '(F7.2)') locarr(1,z)  ! lat (CLATH)
-          write(M2, '(F7.2)') locarr(2,z)  ! lon (CLONH)
-          write(M3, '(F8.1)') locarr(4,z)  ! zx1 (FLVL)
-          write(M4, '(F8.1)') locarr(5,z)  ! zx2 (PSAL)
-          write(M5, '(F6.2)') obsarr(3,z)  ! tt
-          write(M6, '(F5.1)') obsarr(4,z)  ! wdir
-          write(M7, '(F6.2)') obsarr(5,z)  ! wspd
-          write(M8, '(F8.1)') locarr(3,z)  ! pr
-          write(M10, '(I10)') idate
-          write(M11, '(A2)') minute
-
-          CALL READMval(M1,lat)
-          CALL READMval(M2,lon)
-          CALL READMval(M3,zx1)
-          CALL READMval(M4,zx2)
-          CALL READMval(M5,tt)
-          CALL READMval(M6,wdir)
-          CALL READMval(M7,wspd)
-
-          date=M10
-          mins=M11
+          CALL get_val(locarr(3,z), pr)
+          CALL get_val(locarr(4,z), zx1)
+          CALL get_val(locarr(5,z), zx2)
+          CALL get_val(obsarr(3,z), tt)
+          CALL get_val(obsarr(4,z), wdir)
+          CALL get_val(obsarr(5,z), wspd)
+          CALL get_lat_lon(locarr(1,z), locarr(6,z), lat)
+          CALL get_lat_lon(locarr(2,z), locarr(7,z), lon)
 
           zx=99999.9
           if(zx1.ne.0 .and. zx1<99999) then
@@ -195,15 +185,15 @@ c  Prepare output
             zx=zx2
           end if
 
-             if(ibfms(idarr(1,z)) .eq. 0) then
-                write(aircftid, '(A,1X,A)') 'ACID:',idarr(1,z)
-             else if (ibfms(idarr(2,z)) .eq. 0) then
-                write(aircftid, '(A,1X,A)') 'ACRN:',idarr(2,z)
-             else if (ibfms(idarr(4,z)) .eq. 0) then
-                write(aircftid, '(A,1X,A)') 'RPID:',idarr(4,z)
-             else
-                write(aircftid, '(A40)') 'ACID: MISSING'
-             endif
+          if(ibfms(idarr(1,z)) .eq. 0) then
+            write(aircftid, '(A,1X,A)') 'ACID:',idarr(1,z)
+          else if (ibfms(idarr(2,z)) .eq. 0) then
+            write(aircftid, '(A,1X,A)') 'ACRN:',idarr(2,z)
+          else if (ibfms(idarr(4,z)) .eq. 0) then
+            write(aircftid, '(A,1X,A)') 'RPID:',idarr(4,z)
+          else
+            write(aircftid, '(A40)') 'ACID: MISSING'
+          endif
 
 c------------------------------------------------------------------------
 c         Write output 
@@ -230,26 +220,62 @@ c         Write output
              write(iou,112) pr,zx,tt,td,wdir,wspd
            endif
 
-111       format(i1,1x,a6,3(1x,a40),1x,a10,a2,4(f7.1,1x),i3,1x,i1)
-112       format(6(f7.1,1x))
+111       format(i1,1x,a6,1x,3(a40,1x),a10,a2,1x,
+     +           3(f20.5,1x),f13.5,1x,i10,1x,i1)
+112       format(6(f13.5,1x))
 
         ENDDO
       END DO
 
 C*-----------------------------------------------------------------------
-2000  stop 99999
+2000  continue
 
       END
 
 C*-----------------------------------------------------------------------
-      SUBROUTINE READMval(M1,fl)
-      character*8 M1
-      dumm=99999.9
-      if(M1(1:1) == 'm' .or. M1(1:1) == '*') then
-        fl = dumm
-      else
-        read(M1,*)fl
-      endif
+       SUBROUTINE get_val(mval, retval)
 
-      RETURN
-      END
+C      Checks variable value returned by UFBINT and returns either the 
+c      observation value or missing.
+c
+c      Input:
+c         mval: BUFR parameter value returned by UFBINT
+c      Output:
+c         retval: observation value
+
+       real*8 mval
+       real retval
+       parameter(missing=99999.9)
+
+       IF (ibfms(mval) .EQ. 0) THEN
+          retval = mval
+       ELSE
+          retval = missing
+       ENDIF
+       
+       RETURN
+       END
+C*-----------------------------------------------------------------------
+       SUBROUTINE get_lat_lon(clatlon, clatlonh, retval)
+
+C      Get latitude and longitude from either CLAT/CLON or CLATH/CLONH
+c      Input:
+c         clatlon: CLAT or CLON returned by UFBINT
+c         clatlonh: CLATH or CLONH returned by UFBINT
+c      Output:
+c         retval: latitude or longitude value
+
+       real*8 clatlon, clatlonh
+       real retval
+       parameter(missing=99999.9)
+
+       IF (ibfms(clatlon) .EQ. 0) THEN
+          retval = clatlon
+       ELSE IF (ibfms(clatlonh) .EQ. 0) THEN
+          retval = clatlonh
+       ELSE
+          retval = missing
+       ENDIF
+       
+       RETURN
+       END
