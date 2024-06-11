@@ -240,8 +240,9 @@ c         fmt:  parameter format
 c      Output:
 c         retval: observation value
 
-       real*8 mval, retval, dumm
+       real*8 mval, dumm
        character*6 fmt
+       character retval
 
        dumm=99999.9
 
