@@ -91,6 +91,8 @@ c     Open output file
       dslp=dumm
       date='MMMMMMMMMM'
       mins='MM'
+      lat=dumm
+      lon=dumm
       pr=dumm
       zx=dumm
       tt=dumm
@@ -261,8 +263,8 @@ c         clatlonh: CLATH or CLONH returned by UFBINT
 c      Output:
 c         retval: latitude or longitude value
 
-       real*8 clatlon, clatlonh, retval, dumm
-       dumm=99999.9
+       real*8 clatlon, clatlonh, retval
+       parameter(dumm=99999.9)
 
        IF (ibfms(clatlon) .EQ. 0) THEN
           retval = clatlon
