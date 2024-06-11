@@ -267,9 +267,9 @@ c         retval: latitude or longitude value
        parameter(dumm=99999.9)
 
        IF (ibfms(clatlon) .EQ. 0) THEN
-          retval = clatlon
+          read(clatlon, *) retval
        ELSE IF (ibfms(clatlonh) .EQ. 0) THEN
-          retval = clatlonh
+          read(clatlonh, *) retval
        ELSE
           retval = dumm
        ENDIF
