@@ -248,7 +248,7 @@ c         retval: observation value
        IF (ibfms(mval) .EQ. 0) THEN
           write(retval, fmt) mval
        ELSE
-          retval = dumm
+          write(retval, '(F7.1)') dumm
        ENDIF
        
        RETURN
