@@ -99,6 +99,8 @@ c  Open output file
         date(k)='MMMMMMMMMM'
         mins(k)='MM'
         staid(k)='MMMMMM'
+        lat(k)=dumm
+        lon(k)=dumm
         ter(k)=dumm
         pr(k)=dumm
         zx(k)=dumm
@@ -301,13 +303,14 @@ c         mval: BUFR parameter value returned by UFBINT
 c      Output:
 c         retval: observation value
 
-       real*8 mval, retval, dumm
-       dumm=99999.9
+       real*8 mval
+       real retval
+       parameter(missing=99999.9)
 
        IF (ibfms(mval) .EQ. 0) THEN
           retval = mval
        ELSE
-          retval = dumm
+          retval = missing
        ENDIF
        
        RETURN
@@ -322,15 +325,16 @@ c         clatlonh: CLATH or CLONH returned by UFBINT
 c      Output:
 c         retval: latitude or longitude value
 
-       real*8 clatlon, clatlonh, retval, dumm
-       dumm=99999.9
+       real*8 clatlon, clatlonh
+       real retval
+       parameter(missing=99999.9)
 
        IF (ibfms(clatlon) .EQ. 0) THEN
           retval = clatlon
        ELSE IF (ibfms(clatlonh) .EQ. 0) THEN
           retval = clatlonh
        ELSE
-          retval = dumm
+          retval = missing
        ENDIF
        
        RETURN
