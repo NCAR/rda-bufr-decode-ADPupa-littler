@@ -153,7 +153,7 @@ c subroutine to read data from file unit
       read(iunit,113,end=1000) 
      +     isurf, dname, staid, staname, source,
      +     mdate, xlat, xlon, xter, xslp, nlev, ibogus
-113   format(i1,1x,a6,1x,3(a40,1x),a10,a2,1x,
+113   format(i1,1x,a6,1x,3(a40,1x),a12,1x,
      +       3(f20.5,1x),f13.5,1x,i10,1x,i1)
 
       if (xter .ne. dmiss) ter = xter
