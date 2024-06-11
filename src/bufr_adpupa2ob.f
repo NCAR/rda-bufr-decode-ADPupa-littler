@@ -261,8 +261,9 @@ c  write output
           endif
         enddo
 
-111     format(i1,1x,a6,3(1x,a40),1x,a10,a2,4(f7.1,1x),i5,1x,i1)
-112     format(6(f7.1,1x))
+111       format(i1,1x,a6,1x,3(a40,1x),a10,a2,1x,
+     +           3(f20.5,1x),f13.5,1x,i10,1x,i1)
+112       format(6(f13.5,1x))
       
         CALL SORTWRITE(pr,zx,tt,td,wdir,wspd,l,l1,m)
         write(iou,111) iupper,
