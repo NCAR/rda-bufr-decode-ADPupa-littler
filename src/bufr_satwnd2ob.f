@@ -194,7 +194,7 @@ c       Prepare output
           end if
 
           write(csad, '(A40)') repeat(' ', 40)
-          write(csadstr, '(A255)') repeat(' ',80)
+          write(csadstr, '(A80)') repeat(' ',80)
           CALL getcfmng(lunit, 'SAID', nint(said), '  ', -1,  
      +                  csadstr, len, iret)
           write(csad, '(A40)') csadstr(1:len)
