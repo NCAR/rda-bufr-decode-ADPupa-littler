@@ -17,25 +17,26 @@ c BUFR mnemonics
       PARAMETER (iu=9, iou=10, lunit=11)
 
       real*8 dumm
-      PARAMETER (dumm=9999999.99999)
+      PARAMETER (dumm=100000000000.00000)
 
-      INTEGER year,month,days,hour
-      real said,lat,lon,selv
-      real pr,tt,td,wdir,wspd
+      real*8 said
+      real*8 lat, lon
+      real*8 pr, tt, td, wdir, wspd
+      real*8 selv, dslp
+
       character*40 rpid
       INTEGER nlevi, nlevl, nlevo, nlev
       INTEGER irec, isub
 
-      integer xht, i, iargc, n, k
+      integer i, iargc, n, k
       character*30 fin, fout
       character*10  date_tag, date
       character*6 dname
       character argv*300, minute*2, mins*2
-      character*12 ilev
       real wlon, elon, slat, nlat
 
-      CHARACTER  csubset*8, inf*200, outstg*200
-      INTEGER    y, z, idate, iflag
+      CHARACTER csubset*8, inf*200
+      INTEGER y, z, idate
 
       INTEGER lun, il, im
       INTEGER saidval
@@ -92,7 +93,6 @@ C*    Open output file
 
       write(satwndsource, '(A40)') 'NCEP GDAS BUFR SATWND observations'
 
-      iflag=0
       nlev=1
 
       isurf = 0
@@ -189,7 +189,7 @@ c       Prepare output
           CALL get_lat_lon(locarr2(1,z), locarr2(3,z), lat)
           CALL get_lat_lon(locarr2(2,z), locarr2(4,z), lon)
 
-          if(pr.ne.0 .and. pr<99999 ) then
+          if(pr.ne.0 .and. pr<99999.0 ) then
              pr=pr/100
           end if
 
@@ -219,8 +219,8 @@ c       Write output
                write(iou,112) pr,selv,tt,td,wdir,wspd
           endif
 111       format(i1,1x,a6,1x,3(a40,1x),a10,a2,1x,
-     +           3(f20.5,1x),f13.5,1x,i10,1x,i1)
-112       format(6(f13.5,1x))
+     +           3(f20.5,1x),f20.5,1x,i10,1x,i1)
+112       format(6(f20.5,1x))
 
         END DO
       END DO
@@ -242,9 +242,8 @@ c         mval: BUFR parameter value returned by UFBINT
 c      Output:
 c         retval: observation value
 
-       real*8 mval, missing
-       real retval
-       parameter(missing=9999999.99999)
+       real*8 mval, missing, retval
+       parameter(missing=100000000000.00000)
 
        IF (ibfms(mval) .EQ. 0) THEN
           retval = mval
@@ -286,9 +285,8 @@ c         clatlonh: CLATH or CLONH returned by UFBINT
 c      Output:
 c         retval: latitude or longitude value
 
-       real*8 clatlon, clatlonh, missing
-       real retval
-       parameter(missing=9999999.99999)
+       real*8 clatlon, clatlonh, missing, retval
+       parameter(missing=100000000000.00000)
 
        IF (ibfms(clatlon) .EQ. 0) THEN
           retval = clatlon
