@@ -17,7 +17,7 @@ c BUFR mnemonics
       PARAMETER (iu=9, iou=10, lunit=11)
 
       real*8 dumm
-      PARAMETER (dumm=9999999.99999)
+      PARAMETER (dumm=10000000.00000)
 
       real*8 said
       real*8 lat, lon
@@ -243,7 +243,7 @@ c      Output:
 c         retval: observation value
 
        real*8 mval, missing, retval
-       parameter(missing=9999999.99999)
+       parameter(missing=10000000.00000)
 
        IF (ibfms(mval) .EQ. 0) THEN
           retval = mval
@@ -286,7 +286,7 @@ c      Output:
 c         retval: latitude or longitude value
 
        real*8 clatlon, clatlonh, missing, retval
-       parameter(missing=9999999.99999)
+       parameter(missing=10000000.00000)
 
        IF (ibfms(clatlon) .EQ. 0) THEN
           retval = clatlon
