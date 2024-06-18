@@ -1,5 +1,3 @@
-      use moda_tababd
-    
       PARAMETER (MXMN = 10)
       PARAMETER (MXLV = 255)
 
@@ -21,11 +19,12 @@ c BUFR mnemonics
 
       INTEGER year,month,days,hour
       real lat,lon,pr,tt,td,wdir,wspd
+      character*40 said, rpid
       INTEGER nlevi, nlevl, nlevo, nlev
       INTEGER irec, isub
       REAL ter
 
-      integer xht, i, iargc, n, minu, k
+      integer xht, i, iargc, n, k
       real zx
       character*30 fin, fout
       character*10  date_tag, date
@@ -39,11 +38,12 @@ c BUFR mnemonics
 
       INTEGER lun, il, im
       INTEGER saidval
-      CHARACTER*16 csad
-      CHARACTER*80 csid
-      CHARACTER*255 csadstr
-      CHARACTER*80 desc
+      CHARACTER*40 csad
+      CHARACTER*80 csadstr
       CHARACTER*40 satname, satid, satwndsource
+
+      integer iogce, mtyp, msbt, lcmmsbt, iermsbt
+      character*80 cmmsbt
 
 C*-----------------------------------------------------------------------
 c*    Read the command-line arguments
@@ -82,13 +82,14 @@ C*-----------------------------------------------------------------------
 C*    Open BUFR input file
       OPEN (UNIT=lunit, FILE=inf, form='unformatted')
 
-      dname=' SATOB'
-      satwndsource='NCEP GDAS BUFR SATWND observations      '
-      fout= "satwnd"//date_tag//'.obs'
+      write(dname, '(A6)') 'SATOB'
 
 C*    Open output file
+      fout= "satwnd"//date_tag//'.obs'
       open(iou,file=fout,status='unknown',form='formatted')
       write(iou,fmt='(a10)') date_tag
+
+      write(satwndsource, '(A40)') 'NCEP GDAS BUFR SATWND observations'
 
       iflag=0
       nlev=1
@@ -105,20 +106,17 @@ C*    Open output file
       zx=dumm
       tt=dumm
       td=dumm
-      d=dumm
-      v=dumm
+      wdir=dumm
+      wspd=dumm
 
-C*    Connect BUFR file to the BUFRLIB software for input operations.
-C*    DX BUFR tables are embedded within the first few messages of 
-C*    the BUFR file itself, thus the logical unit for the BUFR tables 
-C*    file is the same as the BUFR file itself.
+C* Connect BUFR file to the BUFRLIB software for input operations.
       CALL OPENBF(lunit, 'IN', lunit)
 
 c     Include code and flag table information from master BUFR tables
       CALL codflg('Y')
 
 C*    Specify format of IDATE values returned by BUFRLIB
-C*    (YYYYMMDDHHMM )
+C*    (YYYYMMDDHHMM)
       CALL DATELEN(10)
      
 C*-----------------------------------------------------------------------
@@ -130,16 +128,35 @@ c       Get file ID (lun) associated with the BUFR file
         CALL status(lunit, lun, il, im)
 
         CALL READNS(lunit, csubset, idate, ierr)
-        CALL UFBCNT(lunit, irec, isub)
-
-c        print'(''MESSAGE: '',A8,2(2X,I6),i12 )',
-c     +           csubset,irec,isub,idate
 
         IF (ierr .eq.  -1 ) THEN
           write(*,*) '[bufr_satwnd2ob]....all records read, Exit'
           CALL CLOSBF(lunit)
           goto 2000 
         END IF
+
+c Get current message and data subset number
+        CALL UFBCNT(lunit, irec, isub)
+
+c        print'(''MESSAGE: '',A8,2(2X,I6),i12 )',
+c     +           csubset,irec,isub,idate
+
+        write(date, '(I10)') idate
+
+c Get data local subtype
+        write(cmmsbt, '(A40)') repeat(' ', 40)
+        write(satname, '(A40)') repeat(' ', 40)
+        iogce = iupvs01(lunit, 'OGCE')
+        mtyp = iupvs01(lunit, 'MTYP')
+        msbt = iupvs01(lunit, 'MSBT')
+        call getcfmng(lunit, 'TABLASL', msbt, 'TABLAT', mtyp, 
+     +                cmmsbt, lcmmsbt, iermsbt)
+
+        if (iermsbt .eq. 0) then
+           write(satname, '(A40)') cmmsbt(1:lcmmsbt)
+        else
+           write (satname, '(A40)') 'BUFR MESSAGE TYPE '//csubset
+        end if
 
 C*      Read data values into arrays
         CALL UFBINT(lunit, idarr, MXMN, MXLV, nlevi, idstr)
@@ -153,26 +170,18 @@ C*      Read data values into arrays
            nlev=nlevi
         endif
 
-        write(date, '(I10)') idate
-
         if (ibfms(locarr(5,1)) .eq. 1) then
-           minu=0
-           mins='00'
+           write(mins, '(I2.2)') '00'
         else
-           minu=int(locarr(5,1))
-           write (mins, FMT='(I2)') minu
+           write (mins, '(I2.2)') int(locarr(5,1))
         endif
-
-c       Get Table D index for csubset mnemonic, and get the 
-c       description
-        CALL nemtab(lun, csubset, idn, tab, n)
-        desc=tabd(n, lun)(16:70)
-        write(satname, '(A40)') desc(17:)
 
 C*-----------------------------------------------------------------------
 c       Prepare output
 
         DO z = 1, nlev
+          CALL get_val(idarr(1,z), said)
+          CALL get_charval(idarr(2,z), rpid)
           CALL get_val(obsarr(1,z), tt)
           CALL get_val(obsarr(2,z), pr)
           CALL get_val(obsarr(3,z), wdir)
@@ -184,23 +193,24 @@ c       Prepare output
              pr=pr/100
           end if
 
-          saidval=nint(idarr(1,z))
-          csad=repeat(' ', 40)
-          csadstr=repeat(' ',255)
-          CALL getcfmng(lunit, 'SAID', saidval, '  ', -1, csadstr, 
-     +                  len, iret)
-          csad=csadstr(1:40)
+          write(csad, '(A40)') repeat(' ', 40)
+          write(csadstr, '(A255)') repeat(' ',80)
+          CALL getcfmng(lunit, 'SAID', nint(said), '  ', -1,  
+     +                  csadstr, len, iret)
+          write(csad, '(A40)') csadstr(1:len)
 
-c       Write to output file
-          if (iflag.eq.0) then
-            write(iou,fmt='(a10)') date_tag
-            iflag=1
-          endif
+          if(rpid .ne. 'MISSING') then
+             write(satid, '(A40)') trim(rpid)
+          else
+             write(satid, '(A40)') csad
+
+c------------------------------------------------------------------------
+c       Write output
           if(slat<=lat .and. nlat>=lat .and. 
      +       wlon<=lon .and. elon>=lon) then
                 write(iou,111) isurf,
      +                         dname,
-     +                         csad,
+     +                         satid,
      +                         satname,
      +                         satwndsource,
      +                         date,
@@ -245,6 +255,28 @@ c         retval: observation value
           retval = mval
        ELSE
           retval = missing
+       ENDIF
+       
+       RETURN
+       END
+C*-----------------------------------------------------------------------
+       SUBROUTINE get_charval(mval, retval)
+
+C      Checks character value returned by UFBINT and returns either the 
+c      string value or missing.
+c
+c      Input:
+c         mval: BUFR character value returned by UFBINT
+c      Output:
+c         retval: observation string
+
+       real*8 mval
+       character*40 retval
+
+       IF (ibfms(mval) .EQ. 0) THEN
+          write(retval, '(A)') mval
+       ELSE
+          write(retval, '(A)') 'MISSING'
        ENDIF
        
        RETURN
