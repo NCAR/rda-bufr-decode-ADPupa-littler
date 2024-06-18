@@ -15,6 +15,8 @@ c BUFR mnemonics
       DATA obstr/'TMDBST PRLC WDIR WSPD                   '/
 
       PARAMETER (iu=9, iou=10, lunit=11)
+
+      real*8 dumm
       PARAMETER (dumm=9999999.99999)
 
       INTEGER year,month,days,hour
@@ -240,7 +242,7 @@ c         mval: BUFR parameter value returned by UFBINT
 c      Output:
 c         retval: observation value
 
-       real*8 mval
+       real*8 mval, missing
        real retval
        parameter(missing=9999999.99999)
 
@@ -284,7 +286,7 @@ c         clatlonh: CLATH or CLONH returned by UFBINT
 c      Output:
 c         retval: latitude or longitude value
 
-       real*8 clatlon, clatlonh
+       real*8 clatlon, clatlonh, missing
        real retval
        parameter(missing=9999999.99999)
 
