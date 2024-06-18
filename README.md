@@ -21,7 +21,7 @@ exe/bufr_aircft2ob.x:        used to convert gdas.aircft.tHHz.YYYYMMHH.bufr file
 exe/bufr_aircar2ob.x:        used to convert gdas.aircar.tHHz.YYYYMMHH.bufr files to obs format.
 exe/bufr_satwnd2ob.x:        used to convert gdas.satwnd.tHHz.YYYYMMHH.bufr files to obs format.
 exe/upperair_obs2littler.x:  used to convert/combine obs format files into one little_r format file.
-exe/files.txt  edit to include desired obs files to be input into the runob2lit_imd_obs.x program.
+exe/files.txt  edit to include desired obs files to be input into the upperair_obs2littler.x program.
                example files are currently listed in the files.txt file. 
 ```
 To convert muliple files, place input BUFR data in `/bufrobs`,
