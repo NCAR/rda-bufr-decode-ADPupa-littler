@@ -203,6 +203,7 @@ c       Prepare output
              write(satid, '(A40)') trim(rpid)
           else
              write(satid, '(A40)') csad
+          endif
 
 c------------------------------------------------------------------------
 c       Write output
