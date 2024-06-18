@@ -148,7 +148,7 @@ c subroutine to read data from file unit
       logical bogus
 
       bogus=.TRUE.
-      dmiss = 99999.9
+      dmiss = 99999.99999
 
       read(iunit,113,end=1000) 
      +     isurf, dname, staid, staname, source,
