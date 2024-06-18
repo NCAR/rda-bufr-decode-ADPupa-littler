@@ -18,8 +18,8 @@ c BUFR mnemonics
       PARAMETER (dumm=99999.9)
 
       INTEGER year,month,days,hour
-      real lat,lon,pr,tt,td,wdir,wspd
-      character*40 said, rpid
+      real said,lat,lon,pr,tt,td,wdir,wspd
+      character*40 rpid
       INTEGER nlevi, nlevl, nlevo, nlev
       INTEGER irec, isub
       REAL ter
