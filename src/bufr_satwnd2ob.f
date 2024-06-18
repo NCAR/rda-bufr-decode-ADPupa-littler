@@ -17,7 +17,6 @@ c BUFR mnemonics
       PARAMETER (iu=9, iou=10, lunit=11)
 
       real*8 dumm
-      PARAMETER (dumm=10000000.00000)
 
       real*8 said
       real*8 lat, lon
@@ -94,6 +93,9 @@ C*    Open output file
       write(satwndsource, '(A40)') 'NCEP GDAS BUFR SATWND observations'
 
       nlev=1
+
+c  Get missing value from BUFR file
+      dumm=getbmiss()
 
       isurf = 0
       ibogus = 0
@@ -180,12 +182,22 @@ C*-----------------------------------------------------------------------
 c       Prepare output
 
         DO z = 1, nlev
-          CALL get_val(idarr(1,z), said)
+c          CALL get_val(idarr(1,z), said)
+
+          said = idarr(1,z)
+
           CALL get_charval(idarr(2,z), rpid)
-          CALL get_val(obsarr(1,z), tt)
-          CALL get_val(obsarr(2,z), pr)
-          CALL get_val(obsarr(3,z), wdir)
-          CALL get_val(obsarr(4,z), wspd)
+
+          tt = obsarr(1,z)
+          pr = obsarr(2,z)
+          wdir = obsarr(3,z)
+          wspd = obsarr(4,z)
+
+c          CALL get_val(obsarr(1,z), tt)
+c          CALL get_val(obsarr(2,z), pr)
+c          CALL get_val(obsarr(3,z), wdir)
+c          CALL get_val(obsarr(4,z), wspd)
+
           CALL get_lat_lon(locarr2(1,z), locarr2(3,z), lat)
           CALL get_lat_lon(locarr2(2,z), locarr2(4,z), lon)
 
@@ -195,9 +207,13 @@ c       Prepare output
 
           write(satid, '(A40)') repeat(' ', 40)
           write(csadstr, '(A80)') repeat(' ',80)
-          CALL getcfmng(lunit, 'SAID', nint(said), '  ', -1,  
-     +                  csadstr, len, iret)
-          write(satid, '(A40)') csadstr(1:len)
+          if (ibfms(said) .eq. 0) then
+             CALL getcfmng(lunit, 'SAID', nint(said), '  ', -1,  
+     +                     csadstr, len, iret)
+             write(satid, '(A40)') csadstr(1:len)
+          else
+             write(satid, '(A40)') 'Satellite ID missing'
+          endif
 
 c------------------------------------------------------------------------
 c       Write output
@@ -285,15 +301,12 @@ c         clatlonh: CLATH or CLONH returned by UFBINT
 c      Output:
 c         retval: latitude or longitude value
 
-       real*8 clatlon, clatlonh, missing, retval
-       parameter(missing=10000000.00000)
+       real*8 clatlon, clatlonh, retval
 
-       IF (ibfms(clatlon) .EQ. 0) THEN
-          retval = clatlon
-       ELSE IF (ibfms(clatlonh) .EQ. 0) THEN
+       IF (ibfms(clatlonh) .EQ. 0) THEN
           retval = clatlonh
        ELSE
-          retval = missing
+          retval = clatlon
        ENDIF
        
        RETURN
