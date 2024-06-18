@@ -15,7 +15,7 @@ c BUFR mnemonics
       DATA obstr/'TMDBST PRLC WDIR WSPD                   '/
 
       PARAMETER (iu=9, iou=10, lunit=11)
-      PARAMETER (dumm=99999.9)
+      PARAMETER (dumm=99999.99999)
 
       INTEGER year,month,days,hour
       real said,lat,lon,selv
@@ -242,7 +242,7 @@ c         retval: observation value
 
        real*8 mval
        real retval
-       parameter(missing=99999.9)
+       parameter(missing=99999.99999)
 
        IF (ibfms(mval) .EQ. 0) THEN
           retval = mval
@@ -286,7 +286,7 @@ c         retval: latitude or longitude value
 
        real*8 clatlon, clatlonh
        real retval
-       parameter(missing=99999.9)
+       parameter(missing=99999.99999)
 
        IF (ibfms(clatlon) .EQ. 0) THEN
           retval = clatlon
