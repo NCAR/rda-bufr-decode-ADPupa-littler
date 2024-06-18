@@ -18,14 +18,13 @@ c BUFR mnemonics
       PARAMETER (dumm=99999.9)
 
       INTEGER year,month,days,hour
-      real said,lat,lon,pr,tt,td,wdir,wspd
+      real said,lat,lon,selv
+      real pr,tt,td,wdir,wspd
       character*40 rpid
       INTEGER nlevi, nlevl, nlevo, nlev
       INTEGER irec, isub
-      REAL ter
 
       integer xht, i, iargc, n, k
-      real zx
       character*30 fin, fout
       character*10  date_tag, date
       character*6 dname
@@ -96,14 +95,13 @@ C*    Open output file
 
       isurf = 0
       ibogus = 0
-      ter = dumm
+      selv = dumm
       dslp = dumm
       date='MMMMMMMMMM'
       mins='MM'
       lat=dumm
       lon=dumm
       pr=dumm
-      zx=dumm
       tt=dumm
       td=dumm
       wdir=dumm
@@ -193,17 +191,11 @@ c       Prepare output
              pr=pr/100
           end if
 
-          write(csad, '(A40)') repeat(' ', 40)
+          write(satid, '(A40)') repeat(' ', 40)
           write(csadstr, '(A80)') repeat(' ',80)
           CALL getcfmng(lunit, 'SAID', nint(said), '  ', -1,  
      +                  csadstr, len, iret)
-          write(csad, '(A40)') csadstr(1:len)
-
-          if(rpid .ne. 'MISSING') then
-             write(satid, '(A40)') trim(rpid)
-          else
-             write(satid, '(A40)') csad
-          endif
+          write(satid, '(A40)') csadstr(1:len)
 
 c------------------------------------------------------------------------
 c       Write output
@@ -218,11 +210,11 @@ c       Write output
      +                         mins,
      +                         lat,
      +                         lon,
-     +                         ter,
+     +                         selv,
      +                         dslp,
      +                         nlev,
      +                         ibogus
-               write(iou,112) pr,zx,tt,td,wdir,wspd
+               write(iou,112) pr,selv,tt,td,wdir,wspd
           endif
 111       format(i1,1x,a6,1x,3(a40,1x),a10,a2,1x,
      +           3(f20.5,1x),f13.5,1x,i10,1x,i1)
